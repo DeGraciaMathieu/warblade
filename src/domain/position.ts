@@ -1,4 +1,5 @@
 import type { Position } from './unit'
+import type { Obstacle } from './obstacle'
 
 export const capPosition = (from: Position, rawTarget: Position, maxDist: number): Position => {
   const dx = rawTarget.x - from.x
@@ -10,4 +11,54 @@ export const capPosition = (from: Position, rawTarget: Position, maxDist: number
 
   const ratio = maxDist / dist
   return { x: from.x + dx * ratio, y: from.y + dy * ratio }
+}
+
+const slabEntry = (from: Position, to: Position, obs: Obstacle): number | null => {
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+
+  let tEnter = 0
+  let tExit = 1
+
+  if (dx === 0) {
+    if (from.x < obs.x || from.x > obs.x + obs.width) return null
+  } else {
+    const t1 = (obs.x - from.x) / dx
+    const t2 = (obs.x + obs.width - from.x) / dx
+    tEnter = Math.max(tEnter, Math.min(t1, t2))
+    tExit = Math.min(tExit, Math.max(t1, t2))
+  }
+
+  if (dy === 0) {
+    if (from.y < obs.y || from.y > obs.y + obs.height) return null
+  } else {
+    const t1 = (obs.y - from.y) / dy
+    const t2 = (obs.y + obs.height - from.y) / dy
+    tEnter = Math.max(tEnter, Math.min(t1, t2))
+    tExit = Math.min(tExit, Math.max(t1, t2))
+  }
+
+  if (tEnter >= tExit || tEnter < 0) return null
+  return tEnter
+}
+
+export const resolveTarget = (
+  from: Position,
+  rawTarget: Position,
+  maxDist: number,
+  obstacles: Obstacle[],
+): Position => {
+  const capped = capPosition(from, rawTarget, maxDist)
+
+  let tMin = 1
+  for (const obs of obstacles) {
+    const t = slabEntry(from, capped, obs)
+    if (t !== null && t < tMin) tMin = t
+  }
+
+  if (tMin === 1) return capped
+
+  const dx = capped.x - from.x
+  const dy = capped.y - from.y
+  return { x: from.x + dx * tMin, y: from.y + dy * tMin }
 }

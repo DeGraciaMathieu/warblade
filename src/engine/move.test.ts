@@ -6,6 +6,7 @@ const BASE_STATE: GameState = {
   units: {
     'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6 },
   },
+  obstacles: [],
 }
 
 describe('applyMove', () => {
