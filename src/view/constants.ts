@@ -1,7 +1,8 @@
-export const PIXELS_PER_INCH = 40
+import { BOARD_WIDTH_IN, BOARD_HEIGHT_IN } from '../domain/board'
 
-export const BOARD_WIDTH_IN = 48
-export const BOARD_HEIGHT_IN = 48
+export { BOARD_WIDTH_IN, BOARD_HEIGHT_IN }
+
+export const PIXELS_PER_INCH = 40
 
 export const BOARD_WIDTH_PX = BOARD_WIDTH_IN * PIXELS_PER_INCH
 export const BOARD_HEIGHT_PX = BOARD_HEIGHT_IN * PIXELS_PER_INCH
