@@ -3,13 +3,20 @@ import { immer } from 'zustand/middleware/immer'
 import type { GameState } from '../domain/game-state'
 import type { UnitId, Position } from '../domain/unit'
 import { applyMove } from '../engine/move'
+import { capPosition } from '../domain/position'
 import { createInfantry } from '../data/units'
+
+export type DragState = {
+  unitId: UnitId
+  target: Position
+}
 
 type GameStore = {
   game: GameState
-  selectedUnitId: UnitId | null
-  selectUnit: (id: UnitId) => void
-  moveUnit: (id: UnitId, target: Position) => void
+  dragState: DragState | null
+  startDrag: (unitId: UnitId, rawTarget: Position) => void
+  updateDrag: (rawTarget: Position) => void
+  endDrag: () => void
 }
 
 const INITIAL_UNITS = [
@@ -25,19 +32,35 @@ const initialGameState: GameState = {
 export const useGameStore = create<GameStore>()(
   immer((set) => ({
     game: initialGameState,
-    selectedUnitId: null,
+    dragState: null,
 
-    selectUnit: (id) => {
+    startDrag: (unitId, rawTarget) => {
       set((store) => {
-        store.selectedUnitId = id
+        const unit = store.game.units[unitId]
+        if (unit === undefined) return
+        store.dragState = {
+          unitId,
+          target: capPosition(unit.position, rawTarget, unit.move),
+        }
       })
     },
 
-    moveUnit: (id, target) => {
+    updateDrag: (rawTarget) => {
       set((store) => {
-        const { state } = applyMove(store.game, id, target)
+        if (store.dragState === null) return
+        const unit = store.game.units[store.dragState.unitId]
+        if (unit === undefined) return
+        store.dragState.target = capPosition(unit.position, rawTarget, unit.move)
+      })
+    },
+
+    endDrag: () => {
+      set((store) => {
+        if (store.dragState === null) return
+        const { unitId, target } = store.dragState
+        const { state } = applyMove(store.game, unitId, target)
         store.game = state
-        store.selectedUnitId = null
+        store.dragState = null
       })
     },
   })),
