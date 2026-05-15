@@ -3,8 +3,9 @@ import { immer } from 'zustand/middleware/immer'
 import type { GameState } from '../domain/game-state'
 import type { UnitId, Position } from '../domain/unit'
 import { applyMove } from '../engine/move'
-import { capPosition } from '../domain/position'
+import { resolveTarget } from '../domain/position'
 import { createInfantry } from '../data/units'
+import { LABYRINTH_MAP } from '../data/maps'
 
 export type DragState = {
   unitId: UnitId
@@ -27,6 +28,7 @@ const INITIAL_UNITS = [
 
 const initialGameState: GameState = {
   units: Object.fromEntries(INITIAL_UNITS.map((u) => [u.id, u])),
+  obstacles: LABYRINTH_MAP.obstacles,
 }
 
 export const useGameStore = create<GameStore>()(
@@ -40,7 +42,7 @@ export const useGameStore = create<GameStore>()(
         if (unit === undefined) return
         store.dragState = {
           unitId,
-          target: capPosition(unit.position, rawTarget, unit.move),
+          target: resolveTarget(unit.position, rawTarget, unit.move, store.game.obstacles),
         }
       })
     },
@@ -50,7 +52,7 @@ export const useGameStore = create<GameStore>()(
         if (store.dragState === null) return
         const unit = store.game.units[store.dragState.unitId]
         if (unit === undefined) return
-        store.dragState.target = capPosition(unit.position, rawTarget, unit.move)
+        store.dragState.target = resolveTarget(unit.position, rawTarget, unit.move, store.game.obstacles)
       })
     },
 

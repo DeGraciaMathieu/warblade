@@ -10,6 +10,7 @@ import {
 import { useGameStore } from './game-store'
 import type { DragState } from './game-store'
 import type { GameState } from '../domain/game-state'
+import type { Obstacle } from '../domain/obstacle'
 import type { UnitId } from '../domain/unit'
 
 const GRID_COLOR = 0x2a2a2a
@@ -17,6 +18,7 @@ const BOARD_BG_COLOR = 0x242424
 const UNIT_COLOR = 0x6ea8fe
 const UNIT_RADIUS_PX = 12
 const ARROW_COLOR = 0xffd166
+const OBSTACLE_COLOR = 0x555555
 
 function drawGrid(gfx: Graphics): void {
   gfx.clear()
@@ -30,6 +32,15 @@ function drawGrid(gfx: Graphics): void {
   for (let y = 0; y <= BOARD_HEIGHT_IN; y++) {
     const py = y * PIXELS_PER_INCH
     gfx.moveTo(0, py).lineTo(BOARD_WIDTH_PX, py).stroke({ color: GRID_COLOR, width: 1 })
+  }
+}
+
+function drawObstacles(gfx: Graphics, obstacles: Obstacle[]): void {
+  gfx.clear()
+  for (const obs of obstacles) {
+    gfx
+      .rect(obs.x * PIXELS_PER_INCH, obs.y * PIXELS_PER_INCH, obs.width * PIXELS_PER_INCH, obs.height * PIXELS_PER_INCH)
+      .fill(OBSTACLE_COLOR)
   }
 }
 
@@ -116,8 +127,10 @@ export function Board() {
       container.appendChild(app.canvas)
 
       const boardGfx = new Graphics()
+      const obstaclesGfx = new Graphics()
       const boardLayer = new Container()
       boardLayer.addChild(boardGfx)
+      boardLayer.addChild(obstaclesGfx)
 
       const arrowGfx = new Graphics()
       const arrowLayer = new Container()
@@ -158,11 +171,13 @@ export function Board() {
       app.renderer.on('resize', center)
 
       const unsubscribe = useGameStore.subscribe(({ game, dragState, startDrag }) => {
+        drawObstacles(obstaclesGfx, game.obstacles)
         drawUnits(unitsLayer, game, (id, x, y) => startDrag(id, { x, y }))
         drawArrow(arrowGfx, game, dragState)
       })
 
       const { game, dragState, startDrag } = useGameStore.getState()
+      drawObstacles(obstaclesGfx, game.obstacles)
       drawUnits(unitsLayer, game, (id, x, y) => startDrag(id, { x, y }))
       drawArrow(arrowGfx, game, dragState)
 
