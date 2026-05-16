@@ -21,9 +21,9 @@ type GameStore = {
 }
 
 const INITIAL_UNITS = [
-  createInfantry('inf-1', 8, 8),
-  createInfantry('inf-2', 20, 15),
-  createInfantry('inf-3', 35, 30),
+  createInfantry('inf-1', 6,  3),  // bord nord gauche
+  createInfantry('inf-2', 42, 3),  // bord nord droit
+  createInfantry('inf-3', 24, 45), // bord sud centre
 ]
 
 const initialGameState: GameState = {
