@@ -26,14 +26,20 @@ export const resolveAttack = (
   if (dist > attacker.weapon.range) return { state, events: [] }
   if (!hasLineOfSight(attacker.position, target.position, state.obstacles)) return { state, events: [] }
 
+  const hitRolls: number[] = []
   let hits = 0
   for (let i = 0; i < attacker.weapon.attacks; i++) {
-    if (roll(rng) >= attacker.weapon.toHit) hits++
+    const r = roll(rng)
+    hitRolls.push(r)
+    if (r >= attacker.weapon.toHit) hits++
   }
 
+  const saveRolls: number[] = []
   let damageDealt = 0
   for (let i = 0; i < hits; i++) {
-    if (roll(rng) < target.save) {
+    const r = roll(rng)
+    saveRolls.push(r)
+    if (r < target.save) {
       damageDealt += attacker.weapon.damage
     }
   }
@@ -46,6 +52,8 @@ export const resolveAttack = (
     targetId,
     hits,
     damageDealt,
+    hitRolls,
+    saveRolls,
   }
 
   const newState: GameState = {

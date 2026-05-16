@@ -90,6 +90,43 @@ describe('resolveAttack', () => {
     expect(next.units['b']?.remainingWounds).toBe(5)
   })
 
+  it('retourne les jets individuels dans l\'événement', () => {
+    // hit rolls: 6 (touche, ≥4), 1 (rate, <4) → 1 touche → 1 save roll
+    // save roll: 3 (échoue, <5) → 1 dégât
+    const rolls = [0.99, 0.01, 0.4]
+    let idx = 0
+    const rng = () => rolls[idx++]!
+    const attacker = makeUnit('a', {
+      position: { x: 0, y: 0 },
+      weapon: { ...FUSIL, attacks: 2, toHit: 4 },
+    })
+    const target = makeUnit('b', { position: { x: 10, y: 0 }, save: 5 })
+    const state = makeState(attacker, target)
+    const { events } = resolveAttack(state, 'a', 'b', rng)
+    const event = events[0]
+    expect(event?.type).toBe('attack-resolved')
+    if (event?.type === 'attack-resolved') {
+      expect(event.hitRolls).toEqual([6, 1])
+      expect(event.saveRolls).toEqual([3])
+    }
+  })
+
+  it('retourne les jets de sauvegarde pour chaque touche', () => {
+    const alwaysHit: () => number = () => 0.99 // roll 6 → touche (toHit=4), save échoue (save=5, roll 6 ≥ 5)
+    const attacker = makeUnit('a', {
+      position: { x: 0, y: 0 },
+      weapon: { ...FUSIL, attacks: 2, toHit: 1 },
+    })
+    const target = makeUnit('b', { position: { x: 10, y: 0 }, save: 5 })
+    const state = makeState(attacker, target)
+    const { events } = resolveAttack(state, 'a', 'b', alwaysHit)
+    const event = events[0]
+    if (event?.type === 'attack-resolved') {
+      expect(event.hitRolls).toHaveLength(2)
+      expect(event.saveRolls).toHaveLength(2)
+    }
+  })
+
   it('remainingWounds ne descend pas en dessous de 0', () => {
     const alwaysHit: () => number = () => 0.99
     const attacker = makeUnit('a', {
