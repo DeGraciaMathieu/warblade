@@ -17,7 +17,8 @@ import { hasLineOfSight } from '../domain/position'
 
 const GRID_COLOR = 0x2a2a2a
 const BOARD_BG_COLOR = 0x242424
-const UNIT_COLOR = 0x6ea8fe
+const PLAYER_1_COLOR = 0x6ea8fe
+const PLAYER_2_COLOR = 0xe85d5d
 const ARROW_COLOR = 0xffd166
 const TARGET_LINE_COLOR = 0xff4444
 const TARGET_LINE_BLOCKED_COLOR = 0x888888
@@ -70,7 +71,8 @@ function drawUnits(
   for (const unit of Object.values(game.units)) {
     const gfx = new Graphics()
 
-    gfx.circle(0, 0, UNIT_RADIUS_PX).fill(UNIT_COLOR)
+    const unitColor = unit.playerId === 1 ? PLAYER_1_COLOR : PLAYER_2_COLOR
+    gfx.circle(0, 0, UNIT_RADIUS_PX).fill(unitColor)
 
     const moveRatio = unit.move > 0 ? unit.remainingMove / unit.move : 0
     gfx
