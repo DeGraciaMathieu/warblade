@@ -2,14 +2,12 @@ import type { GameState } from '../domain/game-state'
 import type { GameEvent } from '../domain/game-event'
 import type { Position, UnitId } from '../domain/unit'
 import { BOARD_WIDTH_IN, BOARD_HEIGHT_IN } from '../domain/board'
+import { distance } from '../domain/position'
 
 type Resolution = {
   state: GameState
   events: GameEvent[]
 }
-
-const distance = (a: Position, b: Position): number =>
-  Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
 
 const isInsideBoard = (pos: Position): boolean =>
   pos.x >= 0 && pos.y >= 0 && pos.x <= BOARD_WIDTH_IN && pos.y <= BOARD_HEIGHT_IN

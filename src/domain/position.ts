@@ -1,6 +1,9 @@
 import type { Position } from './unit'
 import type { Obstacle } from './obstacle'
 
+export const distance = (a: Position, b: Position): number =>
+  Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
+
 export const capPosition = (from: Position, rawTarget: Position, maxDist: number): Position => {
   const dx = rawTarget.x - from.x
   const dy = rawTarget.y - from.y
