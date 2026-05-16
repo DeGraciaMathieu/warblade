@@ -47,12 +47,19 @@ export const resolveTarget = (
   rawTarget: Position,
   maxDist: number,
   obstacles: Obstacle[],
+  unitRadius: number,
 ): Position => {
   const capped = capPosition(from, rawTarget, maxDist)
 
   let tMin = 1
   for (const obs of obstacles) {
-    const t = slabEntry(from, capped, obs)
+    const expanded: Obstacle = {
+      x: obs.x - unitRadius,
+      y: obs.y - unitRadius,
+      width: obs.width + unitRadius * 2,
+      height: obs.height + unitRadius * 2,
+    }
+    const t = slabEntry(from, capped, expanded)
     if (t !== null && t < tMin) tMin = t
   }
 
