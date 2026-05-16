@@ -34,16 +34,16 @@ describe('applyMove', () => {
   })
 
   it("refuse un déplacement qui dépasse la stat move", () => {
-    const { state, events } = applyMove(BASE_STATE, 'unit-1', { x: 17, y: 10 }, UNIT_RADIUS_IN)
+    const { state, events } = applyMove(BASE_STATE, 'unit-1', { x: 3, y: 10 }, UNIT_RADIUS_IN)
 
     expect(state).toBe(BASE_STATE)
     expect(events).toHaveLength(0)
   })
 
   it("accepte un déplacement exactement égal à la stat move", () => {
-    const { state } = applyMove(BASE_STATE, 'unit-1', { x: 16, y: 10 }, UNIT_RADIUS_IN)
+    const { state } = applyMove(BASE_STATE, 'unit-1', { x: 4, y: 10 }, UNIT_RADIUS_IN)
 
-    expect(state.units['unit-1']?.position).toEqual({ x: 16, y: 10 })
+    expect(state.units['unit-1']?.position).toEqual({ x: 4, y: 10 })
   })
 
   it("refuse un déplacement vers une position hors du plateau", () => {
