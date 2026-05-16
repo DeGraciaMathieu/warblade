@@ -1,19 +1,27 @@
 import type { Obstacle } from '../domain/obstacle'
-import type { MapZone } from '../domain/map-zone'
+import type { CaptureZone } from '../domain/capture-zone'
 
 export type MapData = {
-  zones: MapZone[]
+  captureZones: CaptureZone[]
   obstacles: Obstacle[]
 }
 
-function obstaclesFromWalls(
+export type MapJson = {
+  width: number
+  height: number
+  walls: [number, number][]
+  zones: [number, number][]
+  obstacles: [number, number][]
+}
+
+function obstaclesFromTiles(
   width: number,
   height: number,
-  walls: [number, number][],
+  tiles: [number, number][],
 ): Obstacle[] {
-  const wallSet = new Set(walls.map(([x, y]) => `${x},${y}`))
+  const tileSet = new Set(tiles.map(([x, y]) => `${x},${y}`))
   const walkable: boolean[][] = Array.from({ length: height }, (_, y) =>
-    Array.from({ length: width }, (_, x) => !wallSet.has(`${x},${y}`)),
+    Array.from({ length: width }, (_, x) => !tileSet.has(`${x},${y}`)),
   )
   const visited: boolean[][] = Array.from({ length: height }, () =>
     Array.from({ length: width }, () => false),
@@ -42,9 +50,18 @@ function obstaclesFromWalls(
   return obstacles
 }
 
+export function ingestMap(json: MapJson): MapData {
+  const allTiles: [number, number][] = [...json.walls, ...json.obstacles]
+  const obstacles = obstaclesFromTiles(json.width, json.height, allTiles)
+  const captureZones: CaptureZone[] = json.zones.length > 0
+    ? [{ tiles: json.zones.map(([x, y]) => ({ x, y })) }]
+    : []
+  return { obstacles, captureZones }
+}
+
 export const LABYRINTH_MAP: MapData = {
-  zones: [],
-  obstacles: obstaclesFromWalls(40, 36, [
+  captureZones: [],
+  obstacles: obstaclesFromTiles(40, 36, [
     // barrières horizontales hautes (y=5-6)
     [4,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[11,5],
     [28,5],[29,5],[30,5],[31,5],[32,5],[33,5],[34,5],[35,5],
