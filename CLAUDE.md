@@ -48,6 +48,8 @@ charger et appliquer les skills suivants selon le contexte :
 - diff non trivial ou demande explicite de relecture → `code-review`.
 - bug signalé ou test rouge → `debugging`.
 - refactor (modification sans changement de comportement) → `refactor`.
+- terrain, mouvement, obstacles, ligne de vue → `terrain`.
+- combat, attaque, armes, dégâts, activation, tours → `combat`.
 
 les descriptions de skills listent leurs déclencheurs précis. en cas de doute, charger le skill.
 
