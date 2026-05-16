@@ -2,11 +2,12 @@ import { useGameStore } from './game-store'
 
 export function TurnBar() {
   const activePlayerId = useGameStore((s) => s.game.activePlayerId)
+  const phase = useGameStore((s) => s.game.phase)
   const endTurn = useGameStore((s) => s.endTurn)
 
   return (
     <div style={styles.bar}>
-      <span style={styles.label}>Joueur {activePlayerId}</span>
+      <span style={styles.label}>Phase {phase} — Joueur {activePlayerId}</span>
       <button onClick={endTurn} style={styles.button}>Passer</button>
     </div>
   )
