@@ -1,9 +1,18 @@
+import { useEffect } from 'react'
 import { useGameStore } from './game-store'
 
 export function TurnBar() {
   const activePlayerId = useGameStore((s) => s.game.activePlayerId)
   const phase = useGameStore((s) => s.game.phase)
   const endTurn = useGameStore((s) => s.endTurn)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') endTurn()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [endTurn])
 
   return (
     <div style={styles.bar}>
