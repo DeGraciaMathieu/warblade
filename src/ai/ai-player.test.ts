@@ -64,9 +64,17 @@ describe('décision de l\'IA', () => {
     expect(decision.target.x).toBeLessThanOrEqual(6)
   })
 
-  it('returns end-turn when already activated and no attack possible', () => {
+  it('continue de se déplacer quand le mouvement restant est non nul', () => {
     const state = makeState(
-      [makeUnit('p1', 1, 30, 0), makeUnit('p2', 2, 0, 0)],
+      [makeUnit('p1', 1, 30, 0), makeUnit('p2', 2, 0, 0, { remainingMove: 2.4 })],
+      { activatedUnitId: 'p2' },
+    )
+    expect(decide(state)?.type).toBe('move')
+  })
+
+  it('termine le tour quand le mouvement restant est épuisé', () => {
+    const state = makeState(
+      [makeUnit('p1', 1, 30, 0), makeUnit('p2', 2, 0, 0, { remainingMove: 0 })],
       { activatedUnitId: 'p2' },
     )
     expect(decide(state)).toEqual({ type: 'end-turn' })
@@ -80,6 +88,38 @@ describe('décision de l\'IA', () => {
     )
     const decision = decide(state)
     expect(decision?.type).toBe('move')
+  })
+
+  it('contourne un obstacle qui bloque le chemin direct', () => {
+    // Mur vertical entre l'IA (0,0) et l'ennemi (20,0), bloquant y ∈ [-2, 2]
+    const wall: Obstacle = { x: 3, y: -2, width: 1, height: 4 }
+    const state = makeState(
+      [makeUnit('p1', 1, 20, 0), makeUnit('p2', 2, 0, 0)],
+      { obstacles: [wall] },
+    )
+    const decision = decide(state)
+    expect(decision?.type).toBe('move')
+    if (decision?.type !== 'move') return
+    // L'IA doit avancer vers l'ennemi
+    expect(decision.target.x).toBeGreaterThan(0)
+    // Le chemin direct est bloqué : l'IA doit dévier de y=0
+    expect(Math.abs(decision.target.y)).toBeGreaterThan(1)
+  })
+
+  it('ne dépasse pas sa distance de mouvement en contournant', () => {
+    const wall: Obstacle = { x: 3, y: -2, width: 1, height: 4 }
+    const state = makeState(
+      [makeUnit('p1', 1, 20, 0), makeUnit('p2', 2, 0, 0)],
+      { obstacles: [wall] },
+    )
+    const decision = decide(state)
+    if (decision?.type !== 'move') return
+    const from = { x: 0, y: 0 }
+    const traveledX = decision.target.x - from.x
+    const traveledY = decision.target.y - from.y
+    const straightLineDist = Math.sqrt(traveledX ** 2 + traveledY ** 2)
+    // La distance en ligne droite ne peut pas dépasser le budget de mouvement
+    expect(straightLineDist).toBeLessThanOrEqual(6 + 0.01)
   })
 
   it('picks an unactivated unit when multiple P2 units exist', () => {
