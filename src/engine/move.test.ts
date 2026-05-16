@@ -9,6 +9,8 @@ const BASE_STATE: GameState = {
   obstacles: [],
   activePlayerId: 1,
   activatedUnitId: null,
+  phase: 1,
+  activatedUnitIds: [],
 }
 
 describe('applyMove', () => {

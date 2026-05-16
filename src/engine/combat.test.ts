@@ -7,6 +7,7 @@ import { FUSIL } from '../data/weapons'
 
 const makeUnit = (id: string, overrides: Partial<Unit> = {}): Unit => ({
   id,
+  name: 'Marine',
   playerId: 1,
   position: { x: 0, y: 0 },
   move: 14,
@@ -24,6 +25,8 @@ const makeState = (...units: Unit[]): GameState => ({
   obstacles: [],
   activePlayerId: 1,
   activatedUnitId: null,
+  phase: 1,
+  activatedUnitIds: [],
 })
 
 describe('resolveAttack', () => {
