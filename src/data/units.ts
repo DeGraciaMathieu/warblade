@@ -1,12 +1,13 @@
-import type { Unit } from '../domain/unit'
+import type { Unit, PlayerId } from '../domain/unit'
 import { EPEE, FUSIL } from './weapons'
 
 export const INFANTRY_MOVE_IN = 14
 export const INFANTRY_WOUNDS = 5
 export const INFANTRY_SAVE = 5
 
-export const createInfantry = (id: string, x: number, y: number): Unit => ({
+export const createInfantry = (id: string, playerId: PlayerId, x: number, y: number): Unit => ({
   id,
+  playerId,
   position: { x, y },
   move: INFANTRY_MOVE_IN,
   remainingMove: INFANTRY_MOVE_IN,
