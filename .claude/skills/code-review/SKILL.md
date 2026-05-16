@@ -62,6 +62,8 @@ passer chaque point dans l'ordre. signaler les problèmes trouvés avant de prop
 - [ ] le diff reste dans le périmètre de la phase courante (cf. CLAUDE.md).
 - [ ] aucune nouvelle dépendance npm sans demande préalable.
 - [ ] pas de modification incidente non liée à la tâche (si nécessaire, en faire un commit séparé).
+- [ ] si le diff touche au combat, aux armes, aux dégâts ou à l'activation → vérifier la conformité avec le skill `combat` (pattern retour, rng injecté, pas de hardcode).
+- [ ] si le diff touche au terrain, aux obstacles, au mouvement ou à la LOS → vérifier la conformité avec le skill `terrain` (données dans `data/`, géométrie dans `domain/`).
 
 ## format de retour
 
