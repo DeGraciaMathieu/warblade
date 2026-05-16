@@ -3,7 +3,8 @@ import { immer } from 'zustand/middleware/immer'
 import type { GameState } from '../domain/game-state'
 import type { UnitId, Position } from '../domain/unit'
 import { applyMove } from '../engine/move'
-import { resolveTarget } from '../domain/position'
+import { resolveAttack } from '../engine/combat'
+import { resolveTarget, distance } from '../domain/position'
 import { createInfantry } from '../data/units'
 import { LABYRINTH_MAP } from '../data/maps'
 import { UNIT_RADIUS_IN } from './constants'
@@ -13,12 +14,21 @@ export type DragState = {
   target: Position
 }
 
+export type AttackDragState = {
+  attackerId: UnitId
+  target: Position
+}
+
 type GameStore = {
   game: GameState
   dragState: DragState | null
+  attackDragState: AttackDragState | null
   startDrag: (unitId: UnitId, rawTarget: Position) => void
   updateDrag: (rawTarget: Position) => void
   endDrag: () => void
+  startAttackDrag: (attackerId: UnitId, position: Position) => void
+  updateAttackDrag: (position: Position) => void
+  endAttackDrag: () => void
 }
 
 const INITIAL_UNITS = [
@@ -32,10 +42,12 @@ const initialGameState: GameState = {
   obstacles: LABYRINTH_MAP.obstacles,
 }
 
+
 export const useGameStore = create<GameStore>()(
   immer((set) => ({
     game: initialGameState,
     dragState: null,
+    attackDragState: null,
 
     startDrag: (unitId, rawTarget) => {
       set((store) => {
@@ -64,6 +76,36 @@ export const useGameStore = create<GameStore>()(
         const { state } = applyMove(store.game, unitId, target)
         store.game = state
         store.dragState = null
+      })
+    },
+
+    startAttackDrag: (attackerId, position) => {
+      set((store) => {
+        if (store.game.units[attackerId] === undefined) return
+        store.attackDragState = { attackerId, target: position }
+      })
+    },
+
+    updateAttackDrag: (position) => {
+      set((store) => {
+        if (store.attackDragState === null) return
+        store.attackDragState.target = position
+      })
+    },
+
+    endAttackDrag: () => {
+      set((store) => {
+        if (store.attackDragState === null) return
+        const { attackerId, target } = store.attackDragState
+        store.attackDragState = null
+
+        const targetUnit = Object.values(store.game.units).find(
+          (u) => u.id !== attackerId && distance(u.position, target) <= UNIT_RADIUS_IN,
+        )
+        if (targetUnit === undefined) return
+
+        const { state } = resolveAttack(store.game, attackerId, targetUnit.id, Math.random)
+        store.game = state
       })
     },
   })),

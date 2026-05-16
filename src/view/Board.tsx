@@ -9,7 +9,7 @@ import {
   UNIT_RADIUS_PX,
 } from './constants'
 import { useGameStore } from './game-store'
-import type { DragState } from './game-store'
+import type { AttackDragState, DragState } from './game-store'
 import type { GameState } from '../domain/game-state'
 import type { Obstacle } from '../domain/obstacle'
 import type { UnitId } from '../domain/unit'
@@ -18,6 +18,7 @@ const GRID_COLOR = 0x2a2a2a
 const BOARD_BG_COLOR = 0x242424
 const UNIT_COLOR = 0x6ea8fe
 const ARROW_COLOR = 0xffd166
+const TARGET_LINE_COLOR = 0xff4444
 const OBSTACLE_COLOR = 0x555555
 const GAUGE_BG_COLOR = 0x444444
 const GAUGE_FG_COLOR = 0x4caf50
@@ -53,6 +54,7 @@ function drawUnits(
   container: Container,
   game: GameState,
   onDragStart: (id: UnitId, x: number, y: number) => void,
+  onAttackDragStart: (id: UnitId, x: number, y: number) => void,
 ): void {
   for (const child of container.children) child.destroy()
   container.removeChildren()
@@ -78,7 +80,11 @@ function drawUnits(
     gfx.on('pointerdown', (e) => {
       e.stopPropagation()
       const local = e.getLocalPosition(container)
-      onDragStart(unit.id, local.x / PIXELS_PER_INCH, local.y / PIXELS_PER_INCH)
+      if (e.button === 2) {
+        onAttackDragStart(unit.id, local.x / PIXELS_PER_INCH, local.y / PIXELS_PER_INCH)
+      } else {
+        onDragStart(unit.id, local.x / PIXELS_PER_INCH, local.y / PIXELS_PER_INCH)
+      }
     })
 
     container.addChild(gfx)
@@ -122,6 +128,25 @@ function drawArrow(gfx: Graphics, game: GameState, dragState: DragState | null):
     .fill(ARROW_COLOR)
 }
 
+function drawTargetLine(gfx: Graphics, game: GameState, attackDragState: AttackDragState | null): void {
+  gfx.clear()
+  if (attackDragState === null) return
+
+  const attacker = game.units[attackDragState.attackerId]
+  if (attacker === undefined) return
+
+  const fromX = attacker.position.x * PIXELS_PER_INCH
+  const fromY = attacker.position.y * PIXELS_PER_INCH
+  const toX = attackDragState.target.x * PIXELS_PER_INCH
+  const toY = attackDragState.target.y * PIXELS_PER_INCH
+
+  const dx = toX - fromX
+  const dy = toY - fromY
+  if (Math.sqrt(dx * dx + dy * dy) === 0) return
+
+  gfx.moveTo(fromX, fromY).lineTo(toX, toY).stroke({ color: TARGET_LINE_COLOR, width: 2, alpha: 0.8 })
+}
+
 export function Board() {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -141,6 +166,7 @@ export function Board() {
       }
 
       container.appendChild(app.canvas)
+      app.canvas.addEventListener('contextmenu', (e) => e.preventDefault())
 
       const boardGfx = new Graphics()
       const obstaclesGfx = new Graphics()
@@ -149,26 +175,30 @@ export function Board() {
       boardLayer.addChild(obstaclesGfx)
 
       const arrowGfx = new Graphics()
+      const targetLineGfx = new Graphics()
       const arrowLayer = new Container()
       arrowLayer.addChild(arrowGfx)
+      arrowLayer.addChild(targetLineGfx)
 
       const unitsLayer = new Container()
 
       drawGrid(boardGfx)
 
+      app.stage.eventMode = 'static'
       boardGfx.eventMode = 'static'
 
       boardGfx.on('pointermove', (e) => {
-        const { dragState, updateDrag } = useGameStore.getState()
-        if (dragState === null) return
+        const { dragState, updateDrag, attackDragState, updateAttackDrag } = useGameStore.getState()
         const local = e.getLocalPosition(boardGfx)
-        updateDrag({ x: local.x / PIXELS_PER_INCH, y: local.y / PIXELS_PER_INCH })
+        const pos = { x: local.x / PIXELS_PER_INCH, y: local.y / PIXELS_PER_INCH }
+        if (dragState !== null) updateDrag(pos)
+        if (attackDragState !== null) updateAttackDrag(pos)
       })
 
-      boardGfx.on('pointerup', () => {
-        const { dragState, endDrag } = useGameStore.getState()
-        if (dragState === null) return
-        endDrag()
+      app.stage.on('pointerup', () => {
+        const { dragState, endDrag, attackDragState, endAttackDrag } = useGameStore.getState()
+        if (dragState !== null) endDrag()
+        if (attackDragState !== null) endAttackDrag()
       })
 
       app.stage.addChild(boardLayer)
@@ -186,16 +216,28 @@ export function Board() {
       center()
       app.renderer.on('resize', center)
 
-      const unsubscribe = useGameStore.subscribe(({ game, dragState, startDrag }) => {
+      const unsubscribe = useGameStore.subscribe(({ game, dragState, attackDragState, startDrag, startAttackDrag }) => {
         drawObstacles(obstaclesGfx, game.obstacles)
-        drawUnits(unitsLayer, game, (id, x, y) => startDrag(id, { x, y }))
+        drawUnits(
+          unitsLayer,
+          game,
+          (id, x, y) => startDrag(id, { x, y }),
+          (id, x, y) => startAttackDrag(id, { x, y }),
+        )
         drawArrow(arrowGfx, game, dragState)
+        drawTargetLine(targetLineGfx, game, attackDragState)
       })
 
-      const { game, dragState, startDrag } = useGameStore.getState()
+      const { game, dragState, attackDragState, startDrag, startAttackDrag } = useGameStore.getState()
       drawObstacles(obstaclesGfx, game.obstacles)
-      drawUnits(unitsLayer, game, (id, x, y) => startDrag(id, { x, y }))
+      drawUnits(
+        unitsLayer,
+        game,
+        (id, x, y) => startDrag(id, { x, y }),
+        (id, x, y) => startAttackDrag(id, { x, y }),
+      )
       drawArrow(arrowGfx, game, dragState)
+      drawTargetLine(targetLineGfx, game, attackDragState)
 
       return unsubscribe
     })
