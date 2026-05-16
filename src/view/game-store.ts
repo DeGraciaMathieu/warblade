@@ -6,6 +6,7 @@ import type { Weapon } from '../domain/weapon'
 import type { AttackResolvedEvent } from '../domain/game-event'
 import { applyMove } from '../engine/move'
 import { resolveAttack } from '../engine/combat'
+import { endActivation } from '../engine/turn'
 import { resolveTarget, distance, capPosition } from '../domain/position'
 import { createInfantry } from '../data/units'
 import { LABYRINTH_MAP } from '../data/maps'
@@ -43,6 +44,7 @@ type GameStore = {
   clearDamageFlash: (id: string) => void
   selectUnit: (unitId: UnitId) => void
   equipWeapon: (unitId: UnitId, weapon: Weapon) => void
+  endTurn: () => void
 }
 
 const INITIAL_UNITS = [
@@ -57,6 +59,8 @@ const INITIAL_UNITS = [
 const initialGameState: GameState = {
   units: Object.fromEntries(INITIAL_UNITS.map((u) => [u.id, u])),
   obstacles: LABYRINTH_MAP.obstacles,
+  activePlayerId: 1,
+  activatedUnitId: null,
 }
 
 let flashCounter = 0
@@ -74,6 +78,9 @@ export const useGameStore = create<GameStore>()(
       set((store) => {
         const unit = store.game.units[unitId]
         if (unit === undefined) return
+        if (unit.playerId !== store.game.activePlayerId) return
+        if (store.game.activatedUnitId !== null && store.game.activatedUnitId !== unitId) return
+        store.game.activatedUnitId = unitId
         store.dragState = {
           unitId,
           target: resolveTarget(unit.position, rawTarget, unit.remainingMove, store.game.obstacles, UNIT_RADIUS_IN),
@@ -102,7 +109,11 @@ export const useGameStore = create<GameStore>()(
 
     startAttackDrag: (attackerId, position) => {
       set((store) => {
-        if (store.game.units[attackerId] === undefined) return
+        const unit = store.game.units[attackerId]
+        if (unit === undefined) return
+        if (unit.playerId !== store.game.activePlayerId) return
+        if (store.game.activatedUnitId !== null && store.game.activatedUnitId !== attackerId) return
+        store.game.activatedUnitId = attackerId
         store.attackDragState = { attackerId, target: position }
       })
     },
@@ -128,7 +139,7 @@ export const useGameStore = create<GameStore>()(
         if (targetUnit === undefined) return
 
         const { state, events } = resolveAttack(store.game, attackerId, targetUnit.id, Math.random)
-        store.game = state
+        store.game = endActivation(state)
 
         for (const event of events) {
           if (event.type === 'attack-resolved') {
@@ -166,6 +177,12 @@ export const useGameStore = create<GameStore>()(
         const match = unit.availableWeapons.find((w) => w.name === weapon.name)
         if (match === undefined) return
         unit.weapon = match
+      })
+    },
+
+    endTurn: () => {
+      set((store) => {
+        store.game = endActivation(store.game)
       })
     },
   })),
