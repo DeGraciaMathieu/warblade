@@ -16,7 +16,7 @@ import type { UnitId } from '../domain/unit'
 const GRID_COLOR = 0x2a2a2a
 const BOARD_BG_COLOR = 0x242424
 const UNIT_COLOR = 0x6ea8fe
-const UNIT_RADIUS_PX = 12
+const UNIT_RADIUS_PX = 15
 const ARROW_COLOR = 0xffd166
 const OBSTACLE_COLOR = 0x555555
 const GAUGE_BG_COLOR = 0x444444
