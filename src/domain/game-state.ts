@@ -6,4 +6,6 @@ export type GameState = {
   obstacles: Obstacle[]
   activePlayerId: PlayerId
   activatedUnitId: UnitId | null
+  phase: number
+  activatedUnitIds: UnitId[]
 }
