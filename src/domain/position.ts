@@ -45,6 +45,14 @@ const slabEntry = (from: Position, to: Position, obs: Obstacle): number | null =
   return tEnter
 }
 
+export const hasLineOfSight = (from: Position, to: Position, obstacles: Obstacle[]): boolean => {
+  for (const obs of obstacles) {
+    const t = slabEntry(from, to, obs)
+    if (t !== null && t > 1e-6) return false
+  }
+  return true
+}
+
 export const resolveTarget = (
   from: Position,
   rawTarget: Position,

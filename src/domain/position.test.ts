@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { capPosition, resolveTarget } from './position'
+import { capPosition, resolveTarget, hasLineOfSight } from './position'
 import type { Obstacle } from './obstacle'
 
 describe('capPosition', () => {
@@ -81,5 +81,36 @@ describe('resolveTarget', () => {
     const from = { x: 0, y: 10 }
     const obs: Obstacle = { x: 5, y: 11.5, width: 5, height: 5 }
     expect(resolveTarget(from, { x: 20, y: 10 }, 30, [obs], 1)).toEqual({ x: 20, y: 10 })
+  })
+})
+
+describe('hasLineOfSight', () => {
+  it('retourne true sans obstacle', () => {
+    expect(hasLineOfSight({ x: 0, y: 0 }, { x: 10, y: 0 }, [])).toBe(true)
+  })
+
+  it('retourne true si l\'obstacle est hors de la trajectoire', () => {
+    const obs: Obstacle = { x: 5, y: 5, width: 4, height: 4 }
+
+    expect(hasLineOfSight({ x: 0, y: 0 }, { x: 10, y: 0 }, [obs])).toBe(true)
+  })
+
+  it('retourne false si un obstacle coupe la trajectoire', () => {
+    const obs: Obstacle = { x: 4, y: -2, width: 2, height: 4 }
+
+    expect(hasLineOfSight({ x: 0, y: 0 }, { x: 10, y: 0 }, [obs])).toBe(false)
+  })
+
+  it('retourne false si plusieurs obstacles et l\'un coupe la trajectoire', () => {
+    const obs1: Obstacle = { x: 20, y: -2, width: 2, height: 4 }
+    const obs2: Obstacle = { x: 4, y: -2, width: 2, height: 4 }
+
+    expect(hasLineOfSight({ x: 0, y: 0 }, { x: 10, y: 0 }, [obs1, obs2])).toBe(false)
+  })
+
+  it('retourne true si l\'obstacle commence exactement à la cible', () => {
+    const obs: Obstacle = { x: 10, y: -2, width: 2, height: 4 }
+
+    expect(hasLineOfSight({ x: 0, y: 0 }, { x: 10, y: 0 }, [obs])).toBe(true)
   })
 })
