@@ -42,7 +42,7 @@ export const useGameStore = create<GameStore>()(
         if (unit === undefined) return
         store.dragState = {
           unitId,
-          target: resolveTarget(unit.position, rawTarget, unit.move, store.game.obstacles),
+          target: resolveTarget(unit.position, rawTarget, unit.remainingMove, store.game.obstacles),
         }
       })
     },
@@ -52,7 +52,7 @@ export const useGameStore = create<GameStore>()(
         if (store.dragState === null) return
         const unit = store.game.units[store.dragState.unitId]
         if (unit === undefined) return
-        store.dragState.target = resolveTarget(unit.position, rawTarget, unit.move, store.game.obstacles)
+        store.dragState.target = resolveTarget(unit.position, rawTarget, unit.remainingMove, store.game.obstacles)
       })
     },
 

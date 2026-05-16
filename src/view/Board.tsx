@@ -19,6 +19,11 @@ const UNIT_COLOR = 0x6ea8fe
 const UNIT_RADIUS_PX = 12
 const ARROW_COLOR = 0xffd166
 const OBSTACLE_COLOR = 0x555555
+const GAUGE_BG_COLOR = 0x444444
+const GAUGE_FG_COLOR = 0x4caf50
+const GAUGE_WIDTH_PX = UNIT_RADIUS_PX * 2
+const GAUGE_HEIGHT_PX = 3
+const GAUGE_OFFSET_Y = UNIT_RADIUS_PX + 4
 
 function drawGrid(gfx: Graphics): void {
   gfx.clear()
@@ -56,6 +61,17 @@ function drawUnits(
     const gfx = new Graphics()
 
     gfx.circle(0, 0, UNIT_RADIUS_PX).fill(UNIT_COLOR)
+
+    const ratio = unit.move > 0 ? unit.remainingMove / unit.move : 0
+    gfx
+      .rect(-GAUGE_WIDTH_PX / 2, GAUGE_OFFSET_Y, GAUGE_WIDTH_PX, GAUGE_HEIGHT_PX)
+      .fill(GAUGE_BG_COLOR)
+    if (ratio > 0) {
+      gfx
+        .rect(-GAUGE_WIDTH_PX / 2, GAUGE_OFFSET_Y, GAUGE_WIDTH_PX * ratio, GAUGE_HEIGHT_PX)
+        .fill(GAUGE_FG_COLOR)
+    }
+
     gfx.position.set(unit.position.x * PIXELS_PER_INCH, unit.position.y * PIXELS_PER_INCH)
     gfx.eventMode = 'static'
     gfx.cursor = 'grab'
