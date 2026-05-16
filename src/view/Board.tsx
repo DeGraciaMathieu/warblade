@@ -229,7 +229,7 @@ export function Board() {
 
       let pendingDrag: { unitId: UnitId; startX: number; startY: number } | null = null
 
-      boardGfx.on('pointermove', (e) => {
+      app.stage.on('pointermove', (e) => {
         const { dragState, updateDrag, attackDragState, updateAttackDrag, startDrag } = useGameStore.getState()
         const local = e.getLocalPosition(boardGfx)
         const pos = { x: local.x / PIXELS_PER_INCH, y: local.y / PIXELS_PER_INCH }

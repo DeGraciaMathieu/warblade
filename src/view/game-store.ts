@@ -5,7 +5,7 @@ import type { UnitId, Position } from '../domain/unit'
 import type { Weapon } from '../domain/weapon'
 import { applyMove } from '../engine/move'
 import { resolveAttack } from '../engine/combat'
-import { resolveTarget, distance } from '../domain/position'
+import { resolveTarget, distance, capPosition } from '../domain/position'
 import { createInfantry } from '../data/units'
 import { LABYRINTH_MAP } from '../data/maps'
 import { UNIT_RADIUS_IN } from './constants'
@@ -104,7 +104,9 @@ export const useGameStore = create<GameStore>()(
     updateAttackDrag: (position) => {
       set((store) => {
         if (store.attackDragState === null) return
-        store.attackDragState.target = position
+        const unit = store.game.units[store.attackDragState.attackerId]
+        if (unit === undefined) return
+        store.attackDragState.target = capPosition(unit.position, position, unit.weapon.range)
       })
     },
 
