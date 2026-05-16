@@ -7,8 +7,11 @@ export type Position = {
   y: number
 }
 
+export type PlayerId = 1 | 2
+
 export type Unit = {
   id: UnitId
+  playerId: PlayerId
   position: Position
   move: number
   remainingMove: number
