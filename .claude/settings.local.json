@@ -1,0 +1,31 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(git add:*)",
+            "Bash(git commit -m ':*)",
+            "Bash(npm init:*)",
+            "Bash(npm install:*)",
+            "Bash(npx vite:*)",
+            "Bash(npx vitest:*)",
+            "Skill(update-config)",
+            "Bash(node:*)",
+            "Bash(fnm list:*)",
+            "Bash(git push:*)",
+            "Bash(git checkout:*)"
+        ]
+    },
+    "hooks": {
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "bash scripts/run-tests.sh",
+                        "timeout": 30,
+                        "statusMessage": "Running tests..."
+                    }
+                ]
+            }
+        ]
+    }
+}
