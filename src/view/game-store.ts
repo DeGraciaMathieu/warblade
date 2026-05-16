@@ -8,7 +8,7 @@ import { applyMove } from '../engine/move'
 import { resolveAttack } from '../engine/combat'
 import { endActivation } from '../engine/turn'
 import { resolveTarget, distance, capPosition } from '../domain/position'
-import { createInfantry } from '../data/units'
+import { createInfantry, createSniper } from '../data/units'
 import { LABYRINTH_MAP } from '../data/maps'
 import { UNIT_RADIUS_IN } from './constants'
 
@@ -57,10 +57,10 @@ type GameStore = {
 const INITIAL_UNITS = [
   createInfantry('p1-1', 1, 6, 3),
   createInfantry('p1-2', 1, 24, 3),
-  createInfantry('p1-3', 1, 42, 3),
+  createSniper('p1-3', 1, 42, 3),
   createInfantry('p2-1', 2, 6, 45),
   createInfantry('p2-2', 2, 24, 45),
-  createInfantry('p2-3', 2, 42, 45),
+  createSniper('p2-3', 2, 42, 45),
 ]
 
 const initialGameState: GameState = {

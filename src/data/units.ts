@@ -5,6 +5,10 @@ export const INFANTRY_MOVE_IN = 14
 export const INFANTRY_WOUNDS = 5
 export const INFANTRY_SAVE = 5
 
+export const SNIPER_MOVE_IN = 10
+export const SNIPER_WOUNDS = 4
+export const SNIPER_SAVE = 5
+
 export const createInfantry = (id: string, playerId: PlayerId, x: number, y: number): Unit => ({
   id,
   name: 'Space Marine',
@@ -13,8 +17,22 @@ export const createInfantry = (id: string, playerId: PlayerId, x: number, y: num
   move: INFANTRY_MOVE_IN,
   remainingMove: INFANTRY_MOVE_IN,
   weapon: FUSIL,
-  availableWeapons: [FUSIL, EPEE, SNIPER],
+  availableWeapons: [FUSIL, EPEE],
   wounds: INFANTRY_WOUNDS,
   remainingWounds: INFANTRY_WOUNDS,
   save: INFANTRY_SAVE,
+})
+
+export const createSniper = (id: string, playerId: PlayerId, x: number, y: number): Unit => ({
+  id,
+  name: 'Sniper',
+  playerId,
+  position: { x, y },
+  move: SNIPER_MOVE_IN,
+  remainingMove: SNIPER_MOVE_IN,
+  weapon: SNIPER,
+  availableWeapons: [SNIPER, EPEE],
+  wounds: SNIPER_WOUNDS,
+  remainingWounds: SNIPER_WOUNDS,
+  save: SNIPER_SAVE,
 })
