@@ -11,7 +11,8 @@ import {
 import { useGameStore } from './game-store'
 import type { AttackDragState, DamageFlash, DragState } from './game-store'
 import type { GameState } from '../domain/game-state'
-import type { Obstacle } from '../domain/obstacle'
+import type { MapZone } from '../domain/map-zone'
+import { LABYRINTH_MAP } from '../data/maps'
 import type { UnitId } from '../domain/unit'
 import { hasLineOfSight } from '../domain/position'
 
@@ -22,7 +23,8 @@ const PLAYER_2_COLOR = 0xe85d5d
 const ARROW_COLOR = 0xffd166
 const TARGET_LINE_COLOR = 0xff4444
 const TARGET_LINE_BLOCKED_COLOR = 0x888888
-const OBSTACLE_COLOR = 0x555555
+const ROOM_FLOOR_COLOR = 0x3a3a3a
+const CORRIDOR_FLOOR_COLOR = 0x2f2f2f
 const GAUGE_BG_COLOR = 0x444444
 const GAUGE_FG_COLOR = 0x4caf50
 const HEALTH_FG_COLOR = 0xff4444
@@ -39,27 +41,30 @@ const SELECTED_OUTLINE_GAP_PX = 3
 const ACTIVATED_UNIT_ALPHA = 0.35
 const DRAG_THRESHOLD_PX = 8
 
-function drawGrid(gfx: Graphics): void {
+function drawBackground(gfx: Graphics): void {
   gfx.clear()
   gfx.rect(0, 0, BOARD_WIDTH_PX, BOARD_HEIGHT_PX).fill(BOARD_BG_COLOR)
+}
 
+function drawGridLines(gfx: Graphics): void {
+  gfx.clear()
   for (let x = 0; x <= BOARD_WIDTH_IN; x++) {
     const px = x * PIXELS_PER_INCH
     gfx.moveTo(px, 0).lineTo(px, BOARD_HEIGHT_PX).stroke({ color: GRID_COLOR, width: 1 })
   }
-
   for (let y = 0; y <= BOARD_HEIGHT_IN; y++) {
     const py = y * PIXELS_PER_INCH
     gfx.moveTo(0, py).lineTo(BOARD_WIDTH_PX, py).stroke({ color: GRID_COLOR, width: 1 })
   }
 }
 
-function drawObstacles(gfx: Graphics, obstacles: Obstacle[]): void {
+function drawZones(gfx: Graphics, zones: MapZone[]): void {
   gfx.clear()
-  for (const obs of obstacles) {
+  for (const zone of zones) {
+    const color = zone.type === 'room' ? ROOM_FLOOR_COLOR : CORRIDOR_FLOOR_COLOR
     gfx
-      .rect(obs.x * PIXELS_PER_INCH, obs.y * PIXELS_PER_INCH, obs.width * PIXELS_PER_INCH, obs.height * PIXELS_PER_INCH)
-      .fill(OBSTACLE_COLOR)
+      .rect(zone.x * PIXELS_PER_INCH, zone.y * PIXELS_PER_INCH, zone.width * PIXELS_PER_INCH, zone.height * PIXELS_PER_INCH)
+      .fill(color)
   }
 }
 
@@ -202,11 +207,13 @@ export function Board() {
       container.appendChild(app.canvas)
       app.canvas.addEventListener('contextmenu', (e) => e.preventDefault())
 
-      const boardGfx = new Graphics()
-      const obstaclesGfx = new Graphics()
+      const bgGfx = new Graphics()
+      const zonesGfx = new Graphics()
+      const gridGfx = new Graphics()
       const boardLayer = new Container()
-      boardLayer.addChild(boardGfx)
-      boardLayer.addChild(obstaclesGfx)
+      boardLayer.addChild(bgGfx)
+      boardLayer.addChild(zonesGfx)
+      boardLayer.addChild(gridGfx)
 
       const arrowGfx = new Graphics()
       const targetLineGfx = new Graphics()
@@ -217,10 +224,12 @@ export function Board() {
       const unitsLayer = new Container()
       const damageLayer = new Container()
 
-      drawGrid(boardGfx)
+      drawBackground(bgGfx)
+      drawZones(zonesGfx, LABYRINTH_MAP.zones)
+      drawGridLines(gridGfx)
 
       app.stage.eventMode = 'static'
-      boardGfx.eventMode = 'static'
+      bgGfx.eventMode = 'static'
 
       app.stage.addChild(boardLayer)
       app.stage.addChild(arrowLayer)
@@ -243,7 +252,7 @@ export function Board() {
 
       app.stage.on('pointermove', (e) => {
         const { dragState, updateDrag, attackDragState, updateAttackDrag, startDrag } = useGameStore.getState()
-        const local = e.getLocalPosition(boardGfx)
+        const local = e.getLocalPosition(bgGfx)
         const pos = { x: local.x / PIXELS_PER_INCH, y: local.y / PIXELS_PER_INCH }
         if (pendingDrag !== null) {
           const dx = local.x - pendingDrag.startX
@@ -299,7 +308,6 @@ export function Board() {
       }
 
       const unsubscribe = useGameStore.subscribe(({ game, dragState, attackDragState, damageFlashes, selectedUnitId, startAttackDrag }) => {
-        drawObstacles(obstaclesGfx, game.obstacles)
         drawUnits(
           unitsLayer,
           game,
@@ -319,7 +327,6 @@ export function Board() {
       })
 
       const { game, dragState, attackDragState, selectedUnitId, startAttackDrag } = useGameStore.getState()
-      drawObstacles(obstaclesGfx, game.obstacles)
       drawUnits(
         unitsLayer,
         game,
