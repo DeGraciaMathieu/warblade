@@ -32,6 +32,7 @@ const HEALTH_OFFSET_Y = GAUGE_OFFSET_Y + GAUGE_HEIGHT_PX + 2
 const DAMAGE_FLASH_DURATION_MS = 1500
 const DAMAGE_FLASH_FONT_SIZE = 14
 const DAMAGE_FLASH_DRIFT_PX = 24
+const DRAG_THRESHOLD_PX = 8
 
 function drawGrid(gfx: Graphics): void {
   gfx.clear()
@@ -60,7 +61,7 @@ function drawObstacles(gfx: Graphics, obstacles: Obstacle[]): void {
 function drawUnits(
   container: Container,
   game: GameState,
-  onDragStart: (id: UnitId, x: number, y: number) => void,
+  onPendingDrag: (id: UnitId, x: number, y: number) => void,
   onAttackDragStart: (id: UnitId, x: number, y: number) => void,
 ): void {
   for (const child of container.children) child.destroy()
@@ -100,7 +101,7 @@ function drawUnits(
       if (e.button === 2) {
         onAttackDragStart(unit.id, local.x / PIXELS_PER_INCH, local.y / PIXELS_PER_INCH)
       } else {
-        onDragStart(unit.id, local.x / PIXELS_PER_INCH, local.y / PIXELS_PER_INCH)
+        onPendingDrag(unit.id, local.x, local.y)
       }
     })
 
@@ -209,20 +210,6 @@ export function Board() {
       app.stage.eventMode = 'static'
       boardGfx.eventMode = 'static'
 
-      boardGfx.on('pointermove', (e) => {
-        const { dragState, updateDrag, attackDragState, updateAttackDrag } = useGameStore.getState()
-        const local = e.getLocalPosition(boardGfx)
-        const pos = { x: local.x / PIXELS_PER_INCH, y: local.y / PIXELS_PER_INCH }
-        if (dragState !== null) updateDrag(pos)
-        if (attackDragState !== null) updateAttackDrag(pos)
-      })
-
-      app.stage.on('pointerup', () => {
-        const { dragState, endDrag, attackDragState, endAttackDrag } = useGameStore.getState()
-        if (dragState !== null) endDrag()
-        if (attackDragState !== null) endAttackDrag()
-      })
-
       app.stage.addChild(boardLayer)
       app.stage.addChild(arrowLayer)
       app.stage.addChild(unitsLayer)
@@ -239,6 +226,35 @@ export function Board() {
 
       center()
       app.renderer.on('resize', center)
+
+      let pendingDrag: { unitId: UnitId; startX: number; startY: number } | null = null
+
+      boardGfx.on('pointermove', (e) => {
+        const { dragState, updateDrag, attackDragState, updateAttackDrag, startDrag } = useGameStore.getState()
+        const local = e.getLocalPosition(boardGfx)
+        const pos = { x: local.x / PIXELS_PER_INCH, y: local.y / PIXELS_PER_INCH }
+        if (pendingDrag !== null) {
+          const dx = local.x - pendingDrag.startX
+          const dy = local.y - pendingDrag.startY
+          if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD_PX) {
+            startDrag(pendingDrag.unitId, pos)
+            pendingDrag = null
+          }
+        }
+        if (dragState !== null) updateDrag(pos)
+        if (attackDragState !== null) updateAttackDrag(pos)
+      })
+
+      app.stage.on('pointerup', () => {
+        const { dragState, endDrag, attackDragState, endAttackDrag, selectUnit } = useGameStore.getState()
+        if (pendingDrag !== null) {
+          selectUnit(pendingDrag.unitId)
+          pendingDrag = null
+        } else if (dragState !== null) {
+          endDrag()
+        }
+        if (attackDragState !== null) endAttackDrag()
+      })
 
       const renderedFlashIds = new Set<string>()
 
@@ -270,12 +286,12 @@ export function Board() {
         app.ticker.add(onTick)
       }
 
-      const unsubscribe = useGameStore.subscribe(({ game, dragState, attackDragState, damageFlashes, startDrag, startAttackDrag }) => {
+      const unsubscribe = useGameStore.subscribe(({ game, dragState, attackDragState, damageFlashes, startAttackDrag }) => {
         drawObstacles(obstaclesGfx, game.obstacles)
         drawUnits(
           unitsLayer,
           game,
-          (id, x, y) => startDrag(id, { x, y }),
+          (id, x, y) => { pendingDrag = { unitId: id, startX: x, startY: y } },
           (id, x, y) => startAttackDrag(id, { x, y }),
         )
         drawArrow(arrowGfx, game, dragState)
@@ -288,12 +304,12 @@ export function Board() {
         }
       })
 
-      const { game, dragState, attackDragState, startDrag, startAttackDrag } = useGameStore.getState()
+      const { game, dragState, attackDragState, startAttackDrag } = useGameStore.getState()
       drawObstacles(obstaclesGfx, game.obstacles)
       drawUnits(
         unitsLayer,
         game,
-        (id, x, y) => startDrag(id, { x, y }),
+        (id, x, y) => { pendingDrag = { unitId: id, startX: x, startY: y } },
         (id, x, y) => startAttackDrag(id, { x, y }),
       )
       drawArrow(arrowGfx, game, dragState)

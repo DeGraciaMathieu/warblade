@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import type { GameState } from '../domain/game-state'
 import type { UnitId, Position } from '../domain/unit'
+import type { Weapon } from '../domain/weapon'
 import { applyMove } from '../engine/move'
 import { resolveAttack } from '../engine/combat'
 import { resolveTarget, distance } from '../domain/position'
@@ -30,6 +31,7 @@ type GameStore = {
   dragState: DragState | null
   attackDragState: AttackDragState | null
   damageFlashes: DamageFlash[]
+  selectedUnitId: UnitId | null
   startDrag: (unitId: UnitId, rawTarget: Position) => void
   updateDrag: (rawTarget: Position) => void
   endDrag: () => void
@@ -37,6 +39,8 @@ type GameStore = {
   updateAttackDrag: (position: Position) => void
   endAttackDrag: () => void
   clearDamageFlash: (id: string) => void
+  selectUnit: (unitId: UnitId) => void
+  equipWeapon: (unitId: UnitId, weapon: Weapon) => void
 }
 
 const INITIAL_UNITS = [
@@ -58,6 +62,7 @@ export const useGameStore = create<GameStore>()(
     dragState: null,
     attackDragState: null,
     damageFlashes: [],
+    selectedUnitId: null,
 
     startDrag: (unitId, rawTarget) => {
       set((store) => {
@@ -134,6 +139,21 @@ export const useGameStore = create<GameStore>()(
     clearDamageFlash: (id) => {
       set((store) => {
         store.damageFlashes = store.damageFlashes.filter((f) => f.id !== id)
+      })
+    },
+
+    selectUnit: (unitId) => {
+      set((store) => {
+        store.selectedUnitId = store.selectedUnitId === unitId ? null : unitId
+      })
+    },
+
+    equipWeapon: (unitId, weapon) => {
+      set((store) => {
+        const unit = store.game.units[unitId]
+        if (unit === undefined) return
+        if (!unit.availableWeapons.includes(weapon)) return
+        unit.weapon = weapon
       })
     },
   })),
