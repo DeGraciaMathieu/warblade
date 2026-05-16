@@ -19,16 +19,24 @@ export type AttackDragState = {
   target: Position
 }
 
+export type DamageFlash = {
+  id: string
+  position: Position
+  amount: number
+}
+
 type GameStore = {
   game: GameState
   dragState: DragState | null
   attackDragState: AttackDragState | null
+  damageFlashes: DamageFlash[]
   startDrag: (unitId: UnitId, rawTarget: Position) => void
   updateDrag: (rawTarget: Position) => void
   endDrag: () => void
   startAttackDrag: (attackerId: UnitId, position: Position) => void
   updateAttackDrag: (position: Position) => void
   endAttackDrag: () => void
+  clearDamageFlash: (id: string) => void
 }
 
 const INITIAL_UNITS = [
@@ -42,12 +50,14 @@ const initialGameState: GameState = {
   obstacles: LABYRINTH_MAP.obstacles,
 }
 
+let flashCounter = 0
 
 export const useGameStore = create<GameStore>()(
   immer((set) => ({
     game: initialGameState,
     dragState: null,
     attackDragState: null,
+    damageFlashes: [],
 
     startDrag: (unitId, rawTarget) => {
       set((store) => {
@@ -104,8 +114,26 @@ export const useGameStore = create<GameStore>()(
         )
         if (targetUnit === undefined) return
 
-        const { state } = resolveAttack(store.game, attackerId, targetUnit.id, Math.random)
+        const { state, events } = resolveAttack(store.game, attackerId, targetUnit.id, Math.random)
         store.game = state
+
+        for (const event of events) {
+          if (event.type === 'attack-resolved' && event.damageDealt > 0) {
+            const hit = state.units[event.targetId]
+            if (hit === undefined) continue
+            store.damageFlashes.push({
+              id: `flash-${flashCounter++}`,
+              position: hit.position,
+              amount: event.damageDealt,
+            })
+          }
+        }
+      })
+    },
+
+    clearDamageFlash: (id) => {
+      set((store) => {
+        store.damageFlashes = store.damageFlashes.filter((f) => f.id !== id)
       })
     },
   })),

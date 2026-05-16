@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Application, Container, Graphics } from 'pixi.js'
+import { Application, Container, Graphics, Text } from 'pixi.js'
 import {
   BOARD_HEIGHT_IN,
   BOARD_HEIGHT_PX,
@@ -9,7 +9,7 @@ import {
   UNIT_RADIUS_PX,
 } from './constants'
 import { useGameStore } from './game-store'
-import type { AttackDragState, DragState } from './game-store'
+import type { AttackDragState, DamageFlash, DragState } from './game-store'
 import type { GameState } from '../domain/game-state'
 import type { Obstacle } from '../domain/obstacle'
 import type { UnitId } from '../domain/unit'
@@ -24,9 +24,14 @@ const TARGET_LINE_BLOCKED_COLOR = 0x888888
 const OBSTACLE_COLOR = 0x555555
 const GAUGE_BG_COLOR = 0x444444
 const GAUGE_FG_COLOR = 0x4caf50
+const HEALTH_FG_COLOR = 0xff4444
 const GAUGE_WIDTH_PX = UNIT_RADIUS_PX * 2
 const GAUGE_HEIGHT_PX = 3
 const GAUGE_OFFSET_Y = UNIT_RADIUS_PX + 4
+const HEALTH_OFFSET_Y = GAUGE_OFFSET_Y + GAUGE_HEIGHT_PX + 2
+const DAMAGE_FLASH_DURATION_MS = 1500
+const DAMAGE_FLASH_FONT_SIZE = 14
+const DAMAGE_FLASH_DRIFT_PX = 24
 
 function drawGrid(gfx: Graphics): void {
   gfx.clear()
@@ -66,14 +71,24 @@ function drawUnits(
 
     gfx.circle(0, 0, UNIT_RADIUS_PX).fill(UNIT_COLOR)
 
-    const ratio = unit.move > 0 ? unit.remainingMove / unit.move : 0
+    const moveRatio = unit.move > 0 ? unit.remainingMove / unit.move : 0
     gfx
       .rect(-GAUGE_WIDTH_PX / 2, GAUGE_OFFSET_Y, GAUGE_WIDTH_PX, GAUGE_HEIGHT_PX)
       .fill(GAUGE_BG_COLOR)
-    if (ratio > 0) {
+    if (moveRatio > 0) {
       gfx
-        .rect(-GAUGE_WIDTH_PX / 2, GAUGE_OFFSET_Y, GAUGE_WIDTH_PX * ratio, GAUGE_HEIGHT_PX)
+        .rect(-GAUGE_WIDTH_PX / 2, GAUGE_OFFSET_Y, GAUGE_WIDTH_PX * moveRatio, GAUGE_HEIGHT_PX)
         .fill(GAUGE_FG_COLOR)
+    }
+
+    const healthRatio = unit.wounds > 0 ? unit.remainingWounds / unit.wounds : 0
+    gfx
+      .rect(-GAUGE_WIDTH_PX / 2, HEALTH_OFFSET_Y, GAUGE_WIDTH_PX, GAUGE_HEIGHT_PX)
+      .fill(GAUGE_BG_COLOR)
+    if (healthRatio > 0) {
+      gfx
+        .rect(-GAUGE_WIDTH_PX / 2, HEALTH_OFFSET_Y, GAUGE_WIDTH_PX * healthRatio, GAUGE_HEIGHT_PX)
+        .fill(HEALTH_FG_COLOR)
     }
 
     gfx.position.set(unit.position.x * PIXELS_PER_INCH, unit.position.y * PIXELS_PER_INCH)
@@ -187,6 +202,7 @@ export function Board() {
       arrowLayer.addChild(targetLineGfx)
 
       const unitsLayer = new Container()
+      const damageLayer = new Container()
 
       drawGrid(boardGfx)
 
@@ -210,6 +226,7 @@ export function Board() {
       app.stage.addChild(boardLayer)
       app.stage.addChild(arrowLayer)
       app.stage.addChild(unitsLayer)
+      app.stage.addChild(damageLayer)
 
       const center = () => {
         const offsetX = Math.round((app.screen.width - BOARD_WIDTH_PX) / 2)
@@ -217,12 +234,43 @@ export function Board() {
         boardLayer.position.set(offsetX, offsetY)
         arrowLayer.position.set(offsetX, offsetY)
         unitsLayer.position.set(offsetX, offsetY)
+        damageLayer.position.set(offsetX, offsetY)
       }
 
       center()
       app.renderer.on('resize', center)
 
-      const unsubscribe = useGameStore.subscribe(({ game, dragState, attackDragState, startDrag, startAttackDrag }) => {
+      const renderedFlashIds = new Set<string>()
+
+      const spawnDamageFlash = (flash: DamageFlash) => {
+        const text = new Text({
+          text: `-${flash.amount}`,
+          style: { fill: HEALTH_FG_COLOR, fontSize: DAMAGE_FLASH_FONT_SIZE, fontWeight: 'bold' },
+        })
+        const startX = flash.position.x * PIXELS_PER_INCH
+        const startY = flash.position.y * PIXELS_PER_INCH - UNIT_RADIUS_PX
+        text.anchor.set(0.5, 1)
+        text.position.set(startX, startY)
+        damageLayer.addChild(text)
+
+        let age = 0
+        const onTick = () => {
+          age += app.ticker.deltaMS
+          const t = Math.min(age / DAMAGE_FLASH_DURATION_MS, 1)
+          text.y = startY - t * DAMAGE_FLASH_DRIFT_PX
+          text.alpha = 1 - t
+          if (t >= 1) {
+            app.ticker.remove(onTick)
+            damageLayer.removeChild(text)
+            text.destroy()
+            renderedFlashIds.delete(flash.id)
+            useGameStore.getState().clearDamageFlash(flash.id)
+          }
+        }
+        app.ticker.add(onTick)
+      }
+
+      const unsubscribe = useGameStore.subscribe(({ game, dragState, attackDragState, damageFlashes, startDrag, startAttackDrag }) => {
         drawObstacles(obstaclesGfx, game.obstacles)
         drawUnits(
           unitsLayer,
@@ -232,6 +280,12 @@ export function Board() {
         )
         drawArrow(arrowGfx, game, dragState)
         drawTargetLine(targetLineGfx, game, attackDragState)
+        for (const flash of damageFlashes) {
+          if (!renderedFlashIds.has(flash.id)) {
+            renderedFlashIds.add(flash.id)
+            spawnDamageFlash(flash)
+          }
+        }
       })
 
       const { game, dragState, attackDragState, startDrag, startAttackDrag } = useGameStore.getState()
