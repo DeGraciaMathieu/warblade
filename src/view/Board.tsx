@@ -40,6 +40,9 @@ const DAMAGE_FLASH_DRIFT_PX = 24
 const SELECTED_OUTLINE_COLOR = 0xffffff
 const SELECTED_OUTLINE_WIDTH = 2
 const SELECTED_OUTLINE_GAP_PX = 3
+const TARGET_HIGHLIGHT_COLOR = 0xff8800
+const TARGET_HIGHLIGHT_WIDTH = 2
+const TARGET_HIGHLIGHT_GAP_PX = 3
 const ACTIVATED_UNIT_ALPHA = 0.35
 const DRAG_THRESHOLD_PX = 8
 
@@ -75,6 +78,7 @@ function drawUnits(
   game: GameState,
   selectedUnitId: string | null,
   activatedUnitIds: UnitId[],
+  targetedUnitId: UnitId | null,
   onPendingDrag: (id: UnitId, x: number, y: number) => void,
   onAttackDragStart: (id: UnitId, x: number, y: number) => void,
 ): void {
@@ -87,6 +91,9 @@ function drawUnits(
     const unitColor = unit.playerId === 1 ? PLAYER_1_COLOR : PLAYER_2_COLOR
     if (unit.id === selectedUnitId) {
       gfx.circle(0, 0, UNIT_RADIUS_PX + SELECTED_OUTLINE_GAP_PX).stroke({ color: SELECTED_OUTLINE_COLOR, width: SELECTED_OUTLINE_WIDTH })
+    }
+    if (unit.id === targetedUnitId) {
+      gfx.circle(0, 0, UNIT_RADIUS_PX + TARGET_HIGHLIGHT_GAP_PX).stroke({ color: TARGET_HIGHLIGHT_COLOR, width: TARGET_HIGHLIGHT_WIDTH })
     }
     gfx.circle(0, 0, UNIT_RADIUS_PX).fill(unitColor)
 
@@ -194,6 +201,15 @@ function drawTargetLine(gfx: Graphics, game: GameState, attackDragState: AttackD
     .moveTo(from.x * PIXELS_PER_INCH, from.y * PIXELS_PER_INCH)
     .lineTo(to.x * PIXELS_PER_INCH, to.y * PIXELS_PER_INCH)
     .stroke({ color, width: 2, alpha: 0.8 })
+}
+
+function getTargetedUnitId(game: GameState, attackDragState: AttackDragState | null): UnitId | null {
+  if (attackDragState === null) return null
+  const attacker = game.units[attackDragState.attackerId]
+  if (attacker === undefined) return null
+  return Object.values(game.units).find(
+    (u) => u.playerId !== attacker.playerId && distance(u.position, attackDragState.target) <= UNIT_RADIUS_IN,
+  )?.id ?? null
 }
 
 export function Board() {
@@ -323,6 +339,7 @@ export function Board() {
           game,
           selectedUnitId,
           game.activatedUnitIds,
+          getTargetedUnitId(game, attackDragState),
           (id, x, y) => { pendingDrag = { unitId: id, startX: x, startY: y } },
           (id, x, y) => startAttackDrag(id, { x, y }),
         )
@@ -342,6 +359,7 @@ export function Board() {
         game,
         selectedUnitId,
         game.activatedUnitIds,
+        getTargetedUnitId(game, attackDragState),
         (id, x, y) => { pendingDrag = { unitId: id, startX: x, startY: y } },
         (id, x, y) => startAttackDrag(id, { x, y }),
       )
