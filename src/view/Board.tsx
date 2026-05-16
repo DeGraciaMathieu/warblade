@@ -14,7 +14,9 @@ import type { GameState } from '../domain/game-state'
 import type { MapZone } from '../domain/map-zone'
 import { LABYRINTH_MAP } from '../data/maps'
 import type { UnitId } from '../domain/unit'
-import { hasLineOfSight } from '../domain/position'
+import { UNIT_RADIUS_IN } from '../domain/unit'
+import { hasLineOfSight, distance } from '../domain/position'
+import type { Obstacle } from '../domain/obstacle'
 
 const GRID_COLOR = 0x2a2a2a
 const BOARD_BG_COLOR = 0x242424
@@ -177,7 +179,15 @@ function drawTargetLine(gfx: Graphics, game: GameState, attackDragState: AttackD
   const dy = (to.y - from.y) * PIXELS_PER_INCH
   if (Math.sqrt(dx * dx + dy * dy) === 0) return
 
-  const losBlocked = !hasLineOfSight(from, to, game.obstacles)
+  const enemyObstacles: Obstacle[] = Object.values(game.units)
+    .filter((u) => u.playerId !== attacker.playerId && distance(u.position, to) > UNIT_RADIUS_IN)
+    .map((u) => ({
+      x: u.position.x - UNIT_RADIUS_IN,
+      y: u.position.y - UNIT_RADIUS_IN,
+      width: 2 * UNIT_RADIUS_IN,
+      height: 2 * UNIT_RADIUS_IN,
+    }))
+  const losBlocked = !hasLineOfSight(from, to, [...game.obstacles, ...enemyObstacles])
   const color = losBlocked ? TARGET_LINE_BLOCKED_COLOR : TARGET_LINE_COLOR
 
   gfx
