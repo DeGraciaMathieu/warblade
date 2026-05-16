@@ -22,6 +22,7 @@ const makeUnit = (id: string, overrides: Partial<Unit> = {}): Unit => ({
 
 const makeState = (...units: Unit[]): GameState => ({
   units: Object.fromEntries(units.map((u) => [u.id, u])),
+  walls: [],
   obstacles: [],
   activePlayerId: 1,
   activatedUnitId: null,
@@ -44,15 +45,26 @@ describe('résolution d\'une attaque', () => {
     expect(events).toHaveLength(0)
   })
 
-  it('retourne state inchangé si la LOS est bloquée par un obstacle', () => {
+  it('retourne state inchangé si la LOS est bloquée par un mur', () => {
     const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
     const target = makeUnit('b', { position: { x: 10, y: 0 } })
-    const obstacle = { x: 4, y: -2, width: 2, height: 4 }
-    const state: GameState = { units: { a: attacker, b: target }, obstacles: [obstacle], activePlayerId: 1, activatedUnitId: null }
+    const wall = { x: 4, y: -2, width: 2, height: 4 }
+    const state: GameState = { units: { a: attacker, b: target }, walls: [wall], obstacles: [], activePlayerId: 1, activatedUnitId: null }
     const { state: next, events } = resolveAttack(state, 'a', 'b', seededRng(1))
 
     expect(next).toEqual(state)
     expect(events).toHaveLength(0)
+  })
+
+  it('la LOS n\'est pas bloquée par un obstacle', () => {
+    const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
+    const target = makeUnit('b', { position: { x: 10, y: 0 } })
+    const obstacle = { x: 4, y: -2, width: 2, height: 4 }
+    const state: GameState = { units: { a: attacker, b: target }, walls: [], obstacles: [obstacle], activePlayerId: 1, activatedUnitId: null }
+    const { events } = resolveAttack(state, 'a', 'b', seededRng(1))
+
+    expect(events).toHaveLength(1)
+    expect(events[0]?.type).toBe('attack-resolved')
   })
 
   it('la LOS est bloquée par une unité ennemie interposée', () => {
@@ -130,6 +142,16 @@ describe('résolution d\'une attaque', () => {
     // Obstacle bloque le bord nord de la cible mais pas son centre → LOS passe, couvert actif
     const obstacle = { x: 9, y: -2, width: 2, height: 1.5 }
     const state: GameState = { ...makeState(attacker, target), obstacles: [obstacle] }
+    const { events } = resolveAttack(state, 'a', 'b', seededRng(1))
+    expect(events[0]).toMatchObject({ type: 'attack-resolved', inCover: true })
+  })
+
+  it('expose inCover true quand un mur bloque un bord de la cible', () => {
+    const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
+    const target = makeUnit('b', { position: { x: 10, y: 0 } })
+    // Mur bloque le bord nord de la cible mais pas son centre → LOS passe, couvert actif
+    const wall = { x: 9, y: -2, width: 2, height: 1.5 }
+    const state: GameState = { ...makeState(attacker, target), walls: [wall] }
     const { events } = resolveAttack(state, 'a', 'b', seededRng(1))
     expect(events[0]).toMatchObject({ type: 'attack-resolved', inCover: true })
   })

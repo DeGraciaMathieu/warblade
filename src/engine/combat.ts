@@ -1,4 +1,5 @@
 import type { GameState } from '../domain/game-state'
+import { losBlockers, solidTerrain } from '../domain/game-state'
 import type { GameEvent, AttackResolvedEvent } from '../domain/game-event'
 import type { UnitId } from '../domain/unit'
 import type { Obstacle } from '../domain/obstacle'
@@ -36,9 +37,9 @@ export const resolveAttack = (
       height: 2 * UNIT_RADIUS_IN,
     }))
 
-  if (!hasLineOfSight(attacker.position, target.position, [...state.obstacles, ...enemyObstacles])) return { state, events: [] }
+  if (!hasLineOfSight(attacker.position, target.position, [...losBlockers(state), ...enemyObstacles])) return { state, events: [] }
 
-  const inCover = isInCover(attacker.position, target.position, UNIT_RADIUS_IN, state.obstacles)
+  const inCover = isInCover(attacker.position, target.position, UNIT_RADIUS_IN, solidTerrain(state))
 
   const hitRolls: number[] = []
   let hits = 0
