@@ -2,7 +2,7 @@ import type { GameState } from '../domain/game-state'
 import type { GameEvent, AttackResolvedEvent } from '../domain/game-event'
 import type { UnitId } from '../domain/unit'
 import type { Rng } from '../domain/rng'
-import { distance } from '../domain/position'
+import { distance, hasLineOfSight } from '../domain/position'
 
 type Resolution = {
   state: GameState
@@ -24,6 +24,7 @@ export const resolveAttack = (
 
   const dist = distance(attacker.position, target.position)
   if (dist > attacker.weapon.range) return { state, events: [] }
+  if (!hasLineOfSight(attacker.position, target.position, state.obstacles)) return { state, events: [] }
 
   let hits = 0
   for (let i = 0; i < attacker.weapon.attacks; i++) {

@@ -37,6 +37,17 @@ describe('resolveAttack', () => {
     expect(events).toHaveLength(0)
   })
 
+  it('retourne state inchangé si la LOS est bloquée par un obstacle', () => {
+    const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
+    const target = makeUnit('b', { position: { x: 10, y: 0 } })
+    const obstacle = { x: 4, y: -2, width: 2, height: 4 }
+    const state: GameState = { units: { a: attacker, b: target }, obstacles: [obstacle] }
+    const { state: next, events } = resolveAttack(state, 'a', 'b', seededRng(1))
+
+    expect(next).toEqual(state)
+    expect(events).toHaveLength(0)
+  })
+
   it('retourne state inchangé si la cible est hors de portée', () => {
     const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
     const target = makeUnit('b', { position: { x: 30, y: 0 } })
