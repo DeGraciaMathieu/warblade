@@ -19,13 +19,14 @@ export const applyMove = (state: GameState, unitId: UnitId, target: Position): R
 
   if (unit === undefined) return { state, events: [] }
   if (!isInsideBoard(target)) return { state, events: [] }
-  if (distance(unit.position, target) > unit.move) return { state, events: [] }
+  const moved = distance(unit.position, target)
+  if (moved > unit.remainingMove) return { state, events: [] }
 
   const newState: GameState = {
     ...state,
     units: {
       ...state.units,
-      [unitId]: { ...unit, position: target },
+      [unitId]: { ...unit, position: target, remainingMove: unit.remainingMove - moved },
     },
   }
 

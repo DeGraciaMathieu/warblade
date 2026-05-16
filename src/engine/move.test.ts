@@ -4,7 +4,7 @@ import type { GameState } from '../domain/game-state'
 
 const BASE_STATE: GameState = {
   units: {
-    'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6 },
+    'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 6 },
   },
   obstacles: [],
 }
@@ -52,6 +52,40 @@ describe('applyMove', () => {
     const { state, events } = applyMove(BASE_STATE, 'unit-x', { x: 10, y: 10 })
 
     expect(state).toBe(BASE_STATE)
+    expect(events).toHaveLength(0)
+  })
+
+  it("décrémente remainingMove de la distance réelle parcourue", () => {
+    const { state } = applyMove(BASE_STATE, 'unit-1', { x: 14, y: 10 })
+
+    expect(state.units['unit-1']?.remainingMove).toBeCloseTo(2)
+  })
+
+  it("bloque si remainingMove est épuisé", () => {
+    const exhausted: GameState = {
+      units: {
+        'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 0 },
+      },
+      obstacles: [],
+    }
+
+    const { state, events } = applyMove(exhausted, 'unit-1', { x: 11, y: 10 })
+
+    expect(state).toBe(exhausted)
+    expect(events).toHaveLength(0)
+  })
+
+  it("bloque si la distance dépasse remainingMove même si elle est dans move", () => {
+    const partial: GameState = {
+      units: {
+        'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 2 },
+      },
+      obstacles: [],
+    }
+
+    const { state, events } = applyMove(partial, 'unit-1', { x: 14, y: 10 })
+
+    expect(state).toBe(partial)
     expect(events).toHaveLength(0)
   })
 
