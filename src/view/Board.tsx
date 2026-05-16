@@ -14,7 +14,7 @@ import type { GameState } from '../domain/game-state'
 import { LABYRINTH_MAP } from '../data/maps'
 import type { UnitId } from '../domain/unit'
 import { UNIT_RADIUS_IN } from '../domain/unit'
-import { hasLineOfSight, distance } from '../domain/position'
+import { hasLineOfSight, distance, isInCover } from '../domain/position'
 import type { Obstacle } from '../domain/obstacle'
 
 const GRID_COLOR = 0x2a2a2a
@@ -43,6 +43,8 @@ const TARGET_HIGHLIGHT_WIDTH = 2
 const TARGET_HIGHLIGHT_GAP_PX = 3
 const ACTIVATED_UNIT_ALPHA = 0.35
 const DRAG_THRESHOLD_PX = 8
+const COVER_LABEL_COLOR = 0xffd166
+const COVER_LABEL_FONT_SIZE = 11
 
 function drawBackground(gfx: Graphics): void {
   gfx.clear()
@@ -115,7 +117,7 @@ function drawUnits(
     }
 
     gfx.position.set(unit.position.x * PIXELS_PER_INCH, unit.position.y * PIXELS_PER_INCH)
-    gfx.alpha = activatedUnitIds.includes(unit.id) ? ACTIVATED_UNIT_ALPHA : 1
+    gfx.alpha = activatedUnitIds.includes(unit.id) && unit.id !== targetedUnitId ? ACTIVATED_UNIT_ALPHA : 1
     gfx.eventMode = 'static'
     gfx.cursor = 'grab'
     gfx.on('pointerdown', (e) => {
@@ -200,6 +202,33 @@ function drawTargetLine(gfx: Graphics, game: GameState, attackDragState: AttackD
     .stroke({ color, width: 2, alpha: 0.8 })
 }
 
+function drawCoverLabel(container: Container, game: GameState, attackDragState: AttackDragState | null): void {
+  for (const child of container.children) child.destroy()
+  container.removeChildren()
+
+  if (attackDragState === null) return
+
+  const targetedUnitId = getTargetedUnitId(game, attackDragState)
+  if (targetedUnitId === null) return
+
+  const attacker = game.units[attackDragState.attackerId]
+  const target = game.units[targetedUnitId]
+  if (attacker === undefined || target === undefined) return
+
+  if (!isInCover(attacker.position, target.position, UNIT_RADIUS_IN, game.obstacles)) return
+
+  const label = new Text({
+    text: 'À couvert',
+    style: { fill: COVER_LABEL_COLOR, fontSize: COVER_LABEL_FONT_SIZE, fontWeight: 'bold' },
+  })
+  label.anchor.set(0.5, 1)
+  label.position.set(
+    target.position.x * PIXELS_PER_INCH,
+    target.position.y * PIXELS_PER_INCH - UNIT_RADIUS_PX - TARGET_HIGHLIGHT_GAP_PX - 4,
+  )
+  container.addChild(label)
+}
+
 function getTargetedUnitId(game: GameState, attackDragState: AttackDragState | null): UnitId | null {
   if (attackDragState === null) return null
   const attacker = game.units[attackDragState.attackerId]
@@ -240,9 +269,11 @@ export function Board() {
 
       const arrowGfx = new Graphics()
       const targetLineGfx = new Graphics()
+      const coverLabelContainer = new Container()
       const arrowLayer = new Container()
       arrowLayer.addChild(arrowGfx)
       arrowLayer.addChild(targetLineGfx)
+      arrowLayer.addChild(coverLabelContainer)
 
       const unitsLayer = new Container()
       const damageLayer = new Container()
@@ -342,6 +373,7 @@ export function Board() {
         )
         drawArrow(arrowGfx, game, dragState)
         drawTargetLine(targetLineGfx, game, attackDragState)
+        drawCoverLabel(coverLabelContainer, game, attackDragState)
         for (const flash of damageFlashes) {
           if (!renderedFlashIds.has(flash.id)) {
             renderedFlashIds.add(flash.id)
@@ -362,6 +394,7 @@ export function Board() {
       )
       drawArrow(arrowGfx, game, dragState)
       drawTargetLine(targetLineGfx, game, attackDragState)
+      drawCoverLabel(coverLabelContainer, game, attackDragState)
 
       return unsubscribe
     })
