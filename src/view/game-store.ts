@@ -6,6 +6,7 @@ import { applyMove } from '../engine/move'
 import { resolveTarget } from '../domain/position'
 import { createInfantry } from '../data/units'
 import { LABYRINTH_MAP } from '../data/maps'
+import { UNIT_RADIUS_IN } from './constants'
 
 export type DragState = {
   unitId: UnitId
@@ -42,7 +43,7 @@ export const useGameStore = create<GameStore>()(
         if (unit === undefined) return
         store.dragState = {
           unitId,
-          target: resolveTarget(unit.position, rawTarget, unit.remainingMove, store.game.obstacles),
+          target: resolveTarget(unit.position, rawTarget, unit.remainingMove, store.game.obstacles, UNIT_RADIUS_IN),
         }
       })
     },
@@ -52,7 +53,7 @@ export const useGameStore = create<GameStore>()(
         if (store.dragState === null) return
         const unit = store.game.units[store.dragState.unitId]
         if (unit === undefined) return
-        store.dragState.target = resolveTarget(unit.position, rawTarget, unit.remainingMove, store.game.obstacles)
+        store.dragState.target = resolveTarget(unit.position, rawTarget, unit.remainingMove, store.game.obstacles, UNIT_RADIUS_IN)
       })
     },
 
