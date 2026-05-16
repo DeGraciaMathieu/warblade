@@ -1,3 +1,5 @@
+import type { Weapon } from './weapon'
+
 export type UnitId = string
 
 export type Position = {
@@ -10,4 +12,8 @@ export type Unit = {
   position: Position
   move: number
   remainingMove: number
+  weapon: Weapon
+  wounds: number
+  remainingWounds: number
+  save: number
 }

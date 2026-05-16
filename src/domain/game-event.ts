@@ -7,4 +7,12 @@ export type UnitMovedEvent = {
   to: Position
 }
 
-export type GameEvent = UnitMovedEvent
+export type AttackResolvedEvent = {
+  type: 'attack-resolved'
+  attackerId: UnitId
+  targetId: UnitId
+  hits: number
+  damageDealt: number
+}
+
+export type GameEvent = UnitMovedEvent | AttackResolvedEvent
