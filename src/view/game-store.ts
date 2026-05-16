@@ -68,6 +68,8 @@ const initialGameState: GameState = {
   obstacles: LABYRINTH_MAP.obstacles,
   activePlayerId: 1,
   activatedUnitId: null,
+  phase: 1,
+  activatedUnitIds: [],
 }
 
 let flashCounter = 0
@@ -88,6 +90,7 @@ export const useGameStore = create<GameStore>()(
         if (unit === undefined) return
         if (unit.playerId !== store.game.activePlayerId) return
         if (store.game.activatedUnitId !== null && store.game.activatedUnitId !== unitId) return
+        if (store.game.activatedUnitIds.includes(unitId)) return
         store.game.activatedUnitId = unitId
         store.dragState = {
           unitId,
@@ -121,6 +124,7 @@ export const useGameStore = create<GameStore>()(
         if (unit === undefined) return
         if (unit.playerId !== store.game.activePlayerId) return
         if (store.game.activatedUnitId !== null && store.game.activatedUnitId !== attackerId) return
+        if (store.game.activatedUnitIds.includes(attackerId)) return
         store.game.activatedUnitId = attackerId
         store.attackDragState = { attackerId, target: position }
       })
