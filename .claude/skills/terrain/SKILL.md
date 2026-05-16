@@ -8,7 +8,7 @@ auto_invoke: true
 
 ## Modèle de terrain actuel
 
-Le plateau est un espace 2D continu de **48" × 48"** (`BOARD_WIDTH_IN`, `BOARD_HEIGHT_IN` dans `src/domain/board.ts`).
+Le plateau est un espace 2D continu de **50" × 40"** (`BOARD_WIDTH_IN`, `BOARD_HEIGHT_IN` dans `src/domain/board.ts`).
 
 Un terrain est un rectangle AABB défini par :
 
@@ -17,22 +17,47 @@ Un terrain est un rectangle AABB défini par :
 type Obstacle = { x: number; y: number; width: number; height: number }
 ```
 
-Le `GameState` (`src/domain/game-state.ts`) contient un champ `obstacles: Obstacle[]`.  
-Les données de carte sont dans `src/data/maps.ts` sous le type `MapData`.
+Le `GameState` (`src/domain/game-state.ts`) contient **deux champs de terrain distincts** :
+
+```ts
+walls: Obstacle[]      // murs — bloquent LOS + mouvement + donnent couvert
+obstacles: Obstacle[]  // décors — bloquent mouvement + donnent couvert, mais PAS la LOS
+```
+
+Les données de carte sont dans `src/data/maps.ts` sous le type `MapData` (qui expose aussi `walls` et `obstacles`).
+
+## Règle absolue : utiliser les helpers du domain
+
+**Ne jamais accéder directement à `state.walls` ou `state.obstacles` pour calculer LOS, mouvement ou couvert.** Importer et utiliser les fonctions sémantiques :
+
+```ts
+import { losBlockers, solidTerrain } from '../domain/game-state'
+
+losBlockers(state)   // → state.walls — pour hasLineOfSight
+solidTerrain(state)  // → [...state.walls, ...state.obstacles] — pour mouvement et couvert
+```
+
+| Contexte | Fonction à utiliser |
+|---|---|
+| `hasLineOfSight(...)` | `losBlockers(state)` |
+| `isInCover(...)` | `solidTerrain(state)` |
+| `collidesWithTerrain(...)` / `resolveTarget(...)` | `solidTerrain(state)` |
+| Pathfinding IA `findPath(...)` | `solidTerrain(state)` |
 
 ## Géométrie du mouvement
 
 Deux fonctions dans `src/domain/position.ts` :
 
 - **`capPosition(from, rawTarget, maxDist)`** — plafonne la destination à la portée max.
-- **`resolveTarget(from, rawTarget, maxDist, obstacles)`** — applique `capPosition` puis stoppe le déplacement au bord de l'obstacle le plus proche (algorithme slab AABB).
+- **`resolveTarget(from, rawTarget, maxDist, obstacles)`** — applique `capPosition` puis stoppe le déplacement au bord de l'obstacle le plus proche (algorithme slab AABB). Toujours appeler avec `solidTerrain(state)`.
 
 Le moteur (`src/engine/move.ts` — `applyMove`) :
 1. Vérifie que la cible est dans le plateau.
 2. Vérifie que la distance `from → target` ne dépasse pas `unit.remainingMove`.
-3. Met à jour `position` et décrémente `remainingMove`.
+3. Vérifie la collision avec `collidesWithTerrain(target, radius, solidTerrain(state))`.
+4. Met à jour `position` et décrémente `remainingMove`.
 
-> `applyMove` ne fait pas de résolution d'obstacle — c'est `resolveTarget` (domain) qui le fait en amont, côté view.
+> `resolveTarget` (view/ui-slice) et `applyMove` (engine) utilisent tous les deux `solidTerrain` — cohérence garantie.
 
 ## Ajouter un nouveau type de terrain
 
@@ -68,3 +93,4 @@ Ne pas tester le rendu unitairement (exception documentée dans CLAUDE.md).
 - `position.ts` et `obstacle.ts` ne dépendent d'aucune lib externe (pure domain).
 - Toute logique de règle (coût, dégât) passe par `applyMove` et des `GameEvent`, jamais directement dans la view.
 - Les données de terrain sont dans `src/data/`, pas hardcodées dans le moteur.
+- **Ne jamais accéder à `state.walls` ou `state.obstacles` directement** dans l'engine, la view ou l'IA pour la LOS, le mouvement ou le couvert — toujours passer par `losBlockers(state)` ou `solidTerrain(state)`.

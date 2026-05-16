@@ -12,10 +12,11 @@ Le combat est résolu dans `src/engine/combat.ts` via `resolveAttack`. La séque
 
 1. **Validation** — vérifie que l'attaquant et la cible existent.
 2. **Portée** — `distance(attacker, target) <= weapon.range`.
-3. **Ligne de vue** — `hasLineOfSight(attacker, target, obstacles)` (domain, pure).
-4. **Jets pour toucher** — `weapon.attacks` jets de d6, chaque résultat ≥ `weapon.toHit` = hit.
-5. **Jets de sauvegarde** — pour chaque hit, la cible jette un d6 ; résultat < `target.save` = dégât appliqué.
-6. **Dégâts** — chaque sauvegarde ratée inflige `weapon.damage` ; `remainingWounds` est décrémenté (min 0).
+3. **Ligne de vue** — `hasLineOfSight(attacker, target, [...losBlockers(state), ...enemyObstacles])` — seuls les `walls` bloquent la LOS.
+4. **Couvert** — `isInCover(attacker, target, radius, solidTerrain(state))` — `walls` et `obstacles` donnent tous les deux du couvert.
+5. **Jets pour toucher** — `weapon.attacks` jets de d6, chaque résultat ≥ `weapon.toHit` = hit.
+6. **Jets de sauvegarde** — pour chaque hit, la cible jette un d6 ; résultat < `target.save` = dégât appliqué.
+7. **Dégâts** — chaque sauvegarde ratée inflige `weapon.damage` ; `remainingWounds` est décrémenté (min 0).
 
 Retour : `{ state: GameState, events: GameEvent[] }` avec un `AttackResolvedEvent`.
 
@@ -74,6 +75,25 @@ Le rng est **injecté** via le type `Rng = () => number` (`src/domain/rng.ts`).
 1. Modéliser comme un champ optionnel sur `Unit` dans `domain/unit.ts`.
 2. Appliquer dans `resolveAttack` à l'étape appropriée.
 3. Ne pas hardcoder la règle — la capacité est une donnée sur l'unité, le moteur la lit.
+
+## Sémantique du terrain
+
+**Ne jamais accéder directement à `state.walls` ou `state.obstacles` pour la LOS ou le couvert.** Utiliser les helpers du domain :
+
+```ts
+import { losBlockers, solidTerrain } from '../domain/game-state'
+
+// LOS : walls seulement
+hasLineOfSight(from, to, [...losBlockers(state), ...enemyObstacles])
+
+// Couvert : walls + obstacles
+isInCover(from, to, radius, solidTerrain(state))
+```
+
+| | Bloque LOS | Bloque mouvement | Donne couvert |
+|---|---|---|---|
+| `walls` | ✅ | ✅ | ✅ |
+| `obstacles` | ❌ | ✅ | ✅ |
 
 ## Invariants à respecter
 

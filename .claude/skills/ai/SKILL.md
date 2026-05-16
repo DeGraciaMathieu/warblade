@@ -52,6 +52,20 @@ type AiDecision =
 - Dispatche vers les mêmes actions que le joueur humain : `startDrag/endDrag`, `startAttackDrag/endAttackDrag`, `endTurn`.
 - N'est activé que si `enabled === true` (mode `vs-ai`).
 
+## Terrain : règle obligatoire
+
+**Ne jamais accéder directement à `state.walls` ou `state.obstacles`** dans `ai-player.ts`. Utiliser les helpers du domain :
+
+```ts
+import { losBlockers, solidTerrain } from '../domain/game-state'
+
+// LOS IA : walls seulement
+hasLineOfSight(unit.position, e.position, losBlockers(state))
+
+// Pathfinding IA : walls + obstacles
+moveToward(from, to, maxDist, solidTerrain(state))
+```
+
 ## Invariants à respecter
 
 - `decide()` est **pure** : pas de mutation, pas d'effet de bord, pas de `Math.random`.
