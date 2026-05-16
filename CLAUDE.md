@@ -50,6 +50,8 @@ charger et appliquer les skills suivants selon le contexte :
 - refactor (modification sans changement de comportement) → `refactor`.
 - terrain, mouvement, obstacles, ligne de vue → `terrain`.
 - combat, attaque, armes, dégâts, activation, tours → `combat`.
+- logique IA, comportements, décisions, module `src/ai/` → `ai`.
+- écriture ou modification de tests → `testing`.
 
 les descriptions de skills listent leurs déclencheurs précis. en cas de doute, charger le skill.
 
