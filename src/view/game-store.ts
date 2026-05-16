@@ -28,11 +28,17 @@ export type DamageFlash = {
   amount: number
 }
 
+type PendingDamageFlash = {
+  position: Position
+  amount: number
+}
+
 type GameStore = {
   game: GameState
   dragState: DragState | null
   attackDragState: AttackDragState | null
   damageFlashes: DamageFlash[]
+  pendingDamageFlash: PendingDamageFlash | null
   selectedUnitId: UnitId | null
   lastAttackResult: AttackResolvedEvent | null
   startDrag: (unitId: UnitId, rawTarget: Position) => void
@@ -41,6 +47,7 @@ type GameStore = {
   startAttackDrag: (attackerId: UnitId, position: Position) => void
   updateAttackDrag: (position: Position) => void
   endAttackDrag: () => void
+  flushPendingDamage: () => void
   clearDamageFlash: (id: string) => void
   selectUnit: (unitId: UnitId) => void
   equipWeapon: (unitId: UnitId, weapon: Weapon) => void
@@ -71,6 +78,7 @@ export const useGameStore = create<GameStore>()(
     dragState: null,
     attackDragState: null,
     damageFlashes: [],
+    pendingDamageFlash: null,
     selectedUnitId: null,
     lastAttackResult: null,
 
@@ -147,14 +155,24 @@ export const useGameStore = create<GameStore>()(
             if (event.damageDealt > 0) {
               const hit = state.units[event.targetId]
               if (hit === undefined) continue
-              store.damageFlashes.push({
-                id: `flash-${flashCounter++}`,
+              store.pendingDamageFlash = {
                 position: hit.position,
                 amount: event.damageDealt,
-              })
+              }
             }
           }
         }
+      })
+    },
+
+    flushPendingDamage: () => {
+      set((store) => {
+        if (store.pendingDamageFlash === null) return
+        store.damageFlashes.push({
+          id: `flash-${flashCounter++}`,
+          ...store.pendingDamageFlash,
+        })
+        store.pendingDamageFlash = null
       })
     },
 
