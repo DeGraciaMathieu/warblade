@@ -48,7 +48,6 @@ charger et appliquer les skills suivants selon le contexte :
 - diff non trivial ou demande explicite de relecture → `code-review`.
 - bug signalé ou test rouge → `debugging`.
 - refactor (modification sans changement de comportement) → `refactor`.
-- clôture ou transition de phase → `phase-transition`.
 
 les descriptions de skills listent leurs déclencheurs précis. en cas de doute, charger le skill.
 
@@ -71,16 +70,6 @@ les conventions de code détaillées (typage, nommage, style) sont dans le skill
 - modifier des fichiers hors du périmètre annoncé pour la tâche en cours.
 - inventer une règle de jeu ambiguë (toujours demander avant).
 - élargir le scope d'une tâche en cours ("tant qu'on y est...").
-
-## phase courante
-
-**phase 1** — store zustand + premières entités (figurines sur le plateau).
-
-## phases terminées
-
-| phase | date | commit |
-|-------|------|--------|
-| 0 — setup projet + premier rendu pixi | 2026-05-15 | d315905 |
 
 ## quand ralentir
 
