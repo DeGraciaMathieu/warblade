@@ -55,6 +55,26 @@ describe('resolveAttack', () => {
     expect(events).toHaveLength(0)
   })
 
+  it('la LOS est bloquée par une unité ennemie interposée', () => {
+    const attacker = makeUnit('a', { playerId: 1, position: { x: 0, y: 0 } })
+    const blocker = makeUnit('c', { playerId: 2, position: { x: 10, y: 0 } })
+    const target = makeUnit('b', { playerId: 2, position: { x: 20, y: 0 } })
+    const state = makeState(attacker, blocker, target)
+    const { state: next, events } = resolveAttack(state, 'a', 'b', seededRng(1))
+    expect(next).toEqual(state)
+    expect(events).toHaveLength(0)
+  })
+
+  it('la LOS n\'est pas bloquée par une unité alliée interposée', () => {
+    const attacker = makeUnit('a', { playerId: 1, position: { x: 0, y: 0 } })
+    const ally = makeUnit('c', { playerId: 1, position: { x: 10, y: 0 } })
+    const target = makeUnit('b', { playerId: 2, position: { x: 20, y: 0 } })
+    const state = makeState(attacker, ally, target)
+    const { events } = resolveAttack(state, 'a', 'b', seededRng(1))
+    expect(events).toHaveLength(1)
+    expect(events[0]?.type).toBe('attack-resolved')
+  })
+
   it('retourne state inchangé si la cible est hors de portée', () => {
     const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
     const target = makeUnit('b', { position: { x: 30, y: 0 } })

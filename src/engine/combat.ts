@@ -1,7 +1,9 @@
 import type { GameState } from '../domain/game-state'
 import type { GameEvent, AttackResolvedEvent } from '../domain/game-event'
 import type { UnitId } from '../domain/unit'
+import type { Obstacle } from '../domain/obstacle'
 import type { Rng } from '../domain/rng'
+import { UNIT_RADIUS_IN } from '../domain/unit'
 import { distance, hasLineOfSight } from '../domain/position'
 
 type Resolution = {
@@ -24,7 +26,17 @@ export const resolveAttack = (
 
   const dist = distance(attacker.position, target.position)
   if (dist > attacker.weapon.range) return { state, events: [] }
-  if (!hasLineOfSight(attacker.position, target.position, state.obstacles)) return { state, events: [] }
+
+  const enemyObstacles: Obstacle[] = Object.values(state.units)
+    .filter((u) => u.playerId !== attacker.playerId && u.id !== targetId)
+    .map((u) => ({
+      x: u.position.x - UNIT_RADIUS_IN,
+      y: u.position.y - UNIT_RADIUS_IN,
+      width: 2 * UNIT_RADIUS_IN,
+      height: 2 * UNIT_RADIUS_IN,
+    }))
+
+  if (!hasLineOfSight(attacker.position, target.position, [...state.obstacles, ...enemyObstacles])) return { state, events: [] }
 
   const hitRolls: number[] = []
   let hits = 0
