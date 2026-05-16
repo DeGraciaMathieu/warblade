@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { capPosition, resolveTarget, hasLineOfSight } from './position'
+import { capPosition, resolveTarget, hasLineOfSight, isInCover } from './position'
 import type { Obstacle } from './obstacle'
 
 describe('capPosition', () => {
@@ -112,5 +112,31 @@ describe('hasLineOfSight', () => {
     const obs: Obstacle = { x: 10, y: -2, width: 2, height: 4 }
 
     expect(hasLineOfSight({ x: 0, y: 0 }, { x: 10, y: 0 }, [obs])).toBe(true)
+  })
+})
+
+describe('couvert d\'une unité cible', () => {
+  it('retourne false si tous les bords de la cible sont visibles', () => {
+    expect(isInCover({ x: 0, y: 0 }, { x: 10, y: 0 }, 1, [])).toBe(false)
+  })
+
+  it('retourne false si un obstacle ne bloque aucun bord', () => {
+    const obs: Obstacle = { x: 20, y: 20, width: 5, height: 5 }
+
+    expect(isInCover({ x: 0, y: 0 }, { x: 10, y: 0 }, 1, [obs])).toBe(false)
+  })
+
+  it('retourne true si un obstacle bloque au moins un bord de la cible', () => {
+    // Obstacle derrière le bord nord de la cible (10, -1), ne bloque pas le centre (10, 0)
+    const obs: Obstacle = { x: 9, y: -2, width: 2, height: 1.5 }
+
+    expect(isInCover({ x: 0, y: 0 }, { x: 10, y: 0 }, 1, [obs])).toBe(true)
+  })
+
+  it('retourne true même si le centre de la cible est visible', () => {
+    const obsNorth: Obstacle = { x: 9, y: -2, width: 2, height: 1.5 }
+    // La LOS centre → centre est libre, mais un bord est bloqué
+    expect(hasLineOfSight({ x: 0, y: 0 }, { x: 10, y: 0 }, [obsNorth])).toBe(true)
+    expect(isInCover({ x: 0, y: 0 }, { x: 10, y: 0 }, 1, [obsNorth])).toBe(true)
   })
 })

@@ -15,6 +15,7 @@ export type AttackResolvedEvent = {
   damageDealt: number
   hitRolls: number[]
   saveRolls: number[]
+  inCover: boolean
 }
 
 export type GameEvent = UnitMovedEvent | AttackResolvedEvent

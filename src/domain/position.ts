@@ -53,6 +53,23 @@ export const hasLineOfSight = (from: Position, to: Position, obstacles: Obstacle
   return true
 }
 
+const coverCheckPoints = (center: Position, radius: number): Position[] => [
+  { x: center.x, y: center.y - radius },
+  { x: center.x, y: center.y + radius },
+  { x: center.x - radius, y: center.y },
+  { x: center.x + radius, y: center.y },
+]
+
+export const isInCover = (
+  attackerPos: Position,
+  targetCenter: Position,
+  targetRadius: number,
+  obstacles: Obstacle[],
+): boolean =>
+  coverCheckPoints(targetCenter, targetRadius).some(
+    (point) => !hasLineOfSight(attackerPos, point, obstacles),
+  )
+
 export const resolveTarget = (
   from: Position,
   rawTarget: Position,
