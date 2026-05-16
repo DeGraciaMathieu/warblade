@@ -20,6 +20,7 @@ const makeUnit = (id: string, playerId: 1 | 2, overrides: Partial<Unit> = {}): U
 
 const makeState = (overrides: Partial<GameState> = {}, units: Unit[] = []): GameState => ({
   units: Object.fromEntries(units.map((u) => [u.id, u])),
+  walls: [],
   obstacles: [],
   activePlayerId: 1,
   activatedUnitId: null,

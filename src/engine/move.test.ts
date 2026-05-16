@@ -7,6 +7,7 @@ const BASE_STATE: GameState = {
   units: {
     'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 6 },
   },
+  walls: [],
   obstacles: [],
   activePlayerId: 1,
   activatedUnitId: null,
@@ -65,6 +66,7 @@ describe('déplacement d\'une unité', () => {
       units: {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 0 },
       },
+      walls: [],
       obstacles: [],
       activePlayerId: 1,
     }
@@ -80,6 +82,7 @@ describe('déplacement d\'une unité', () => {
       units: {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 2 },
       },
+      walls: [],
       obstacles: [],
       activePlayerId: 1,
     }
@@ -104,6 +107,7 @@ describe('déplacement d\'une unité', () => {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 10, remainingMove: 10 },
         'unit-2': { id: 'unit-2', position: { x: 14, y: 10 }, move: 6, remainingMove: 6 },
       },
+      walls: [],
       obstacles: [],
       activePlayerId: 1,
       activatedUnitId: null,
@@ -123,6 +127,7 @@ describe('déplacement d\'une unité', () => {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 10, remainingMove: 10 },
         'unit-2': { id: 'unit-2', position: { x: 17, y: 10 }, move: 6, remainingMove: 6 },
       },
+      walls: [],
       obstacles: [],
       activePlayerId: 1,
       activatedUnitId: null,
@@ -135,12 +140,37 @@ describe('déplacement d\'une unité', () => {
     expect(result.units['unit-1']?.position).toEqual({ x: 14, y: 10 })
   })
 
+  it("refuse un déplacement si la destination chevauche un mur", () => {
+    const state: GameState = {
+      ...BASE_STATE,
+      walls: [{ x: 12, y: 9, width: 4, height: 4 }],
+    }
+
+    const { state: result, events } = applyMove(state, 'unit-1', { x: 13, y: 10 }, UNIT_RADIUS_IN)
+
+    expect(result).toBe(state)
+    expect(events).toHaveLength(0)
+  })
+
+  it("refuse un déplacement si la destination chevauche un obstacle", () => {
+    const state: GameState = {
+      ...BASE_STATE,
+      obstacles: [{ x: 12, y: 9, width: 4, height: 4 }],
+    }
+
+    const { state: result, events } = applyMove(state, 'unit-1', { x: 13, y: 10 }, UNIT_RADIUS_IN)
+
+    expect(result).toBe(state)
+    expect(events).toHaveLength(0)
+  })
+
   it("refuse un déplacement si les cercles des deux unités se chevauchent", () => {
     const state: GameState = {
       units: {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 10, remainingMove: 10 },
         'unit-2': { id: 'unit-2', position: { x: 14, y: 10 }, move: 6, remainingMove: 6 },
       },
+      walls: [],
       obstacles: [],
       activePlayerId: 1,
       activatedUnitId: null,
