@@ -16,6 +16,7 @@ const INITIAL_UNITS = [
 const initialGameState: GameState = {
   units: Object.fromEntries(INITIAL_UNITS.map((u) => [u.id, u])),
   obstacles: LABYRINTH_MAP.obstacles,
+  captureZones: LABYRINTH_MAP.captureZones,
   activePlayerId: 1,
   activatedUnitId: null,
   phase: 1,

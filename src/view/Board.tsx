@@ -16,6 +16,7 @@ import type { UnitId } from '../domain/unit'
 import { UNIT_RADIUS_IN } from '../domain/unit'
 import { hasLineOfSight, distance, isInCover } from '../domain/position'
 import type { Obstacle } from '../domain/obstacle'
+import type { CaptureZone } from '../domain/capture-zone'
 
 const GRID_COLOR = 0x2a2a2a
 const BOARD_BG_COLOR = 0x242424
@@ -45,6 +46,8 @@ const ACTIVATED_UNIT_ALPHA = 0.35
 const DRAG_THRESHOLD_PX = 8
 const COVER_LABEL_COLOR = 0xffd166
 const COVER_LABEL_FONT_SIZE = 11
+const CAPTURE_ZONE_COLOR = 0x4fc3f7
+const CAPTURE_ZONE_ALPHA = 0.25
 
 function drawBackground(gfx: Graphics): void {
   gfx.clear()
@@ -60,6 +63,17 @@ function drawGridLines(gfx: Graphics): void {
   for (let y = 0; y <= BOARD_HEIGHT_IN; y++) {
     const py = y * PIXELS_PER_INCH
     gfx.moveTo(0, py).lineTo(BOARD_WIDTH_PX, py).stroke({ color: GRID_COLOR, width: 1 })
+  }
+}
+
+function drawCaptureZones(gfx: Graphics, captureZones: CaptureZone[]): void {
+  gfx.clear()
+  for (const zone of captureZones) {
+    for (const tile of zone.tiles) {
+      gfx
+        .rect(tile.x * PIXELS_PER_INCH, tile.y * PIXELS_PER_INCH, PIXELS_PER_INCH, PIXELS_PER_INCH)
+        .fill({ color: CAPTURE_ZONE_COLOR, alpha: CAPTURE_ZONE_ALPHA })
+    }
   }
 }
 
@@ -260,10 +274,12 @@ export function Board() {
       app.canvas.addEventListener('contextmenu', (e) => e.preventDefault())
 
       const bgGfx = new Graphics()
+      const captureZonesGfx = new Graphics()
       const zonesGfx = new Graphics()
       const gridGfx = new Graphics()
       const boardLayer = new Container()
       boardLayer.addChild(bgGfx)
+      boardLayer.addChild(captureZonesGfx)
       boardLayer.addChild(zonesGfx)
       boardLayer.addChild(gridGfx)
 
@@ -279,6 +295,7 @@ export function Board() {
       const damageLayer = new Container()
 
       drawBackground(bgGfx)
+      drawCaptureZones(captureZonesGfx, LABYRINTH_MAP.captureZones)
       drawWalls(zonesGfx, LABYRINTH_MAP.obstacles)
       drawGridLines(gridGfx)
 
