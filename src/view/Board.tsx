@@ -36,6 +36,7 @@ const DAMAGE_FLASH_DRIFT_PX = 24
 const SELECTED_OUTLINE_COLOR = 0xffffff
 const SELECTED_OUTLINE_WIDTH = 2
 const SELECTED_OUTLINE_GAP_PX = 3
+const ACTIVATED_UNIT_ALPHA = 0.35
 const DRAG_THRESHOLD_PX = 8
 
 function drawGrid(gfx: Graphics): void {
@@ -66,6 +67,7 @@ function drawUnits(
   container: Container,
   game: GameState,
   selectedUnitId: string | null,
+  activatedUnitIds: UnitId[],
   onPendingDrag: (id: UnitId, x: number, y: number) => void,
   onAttackDragStart: (id: UnitId, x: number, y: number) => void,
 ): void {
@@ -102,6 +104,7 @@ function drawUnits(
     }
 
     gfx.position.set(unit.position.x * PIXELS_PER_INCH, unit.position.y * PIXELS_PER_INCH)
+    gfx.alpha = activatedUnitIds.includes(unit.id) ? ACTIVATED_UNIT_ALPHA : 1
     gfx.eventMode = 'static'
     gfx.cursor = 'grab'
     gfx.on('pointerdown', (e) => {
@@ -301,6 +304,7 @@ export function Board() {
           unitsLayer,
           game,
           selectedUnitId,
+          game.activatedUnitIds,
           (id, x, y) => { pendingDrag = { unitId: id, startX: x, startY: y } },
           (id, x, y) => startAttackDrag(id, { x, y }),
         )
@@ -320,6 +324,7 @@ export function Board() {
         unitsLayer,
         game,
         selectedUnitId,
+        game.activatedUnitIds,
         (id, x, y) => { pendingDrag = { unitId: id, startX: x, startY: y } },
         (id, x, y) => startAttackDrag(id, { x, y }),
       )
