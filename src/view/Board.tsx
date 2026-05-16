@@ -11,6 +11,7 @@ import {
 import { useGameStore } from './game-store'
 import type { AttackDragState, DamageFlash, DragState } from './game-store'
 import type { GameState } from '../domain/game-state'
+import { losBlockers } from '../domain/game-state'
 import { ARENA_MAP } from '../data/maps'
 import type { UnitId } from '../domain/unit'
 import { UNIT_RADIUS_IN } from '../domain/unit'
@@ -26,6 +27,7 @@ const ARROW_COLOR = 0xffd166
 const TARGET_LINE_COLOR = 0xff4444
 const TARGET_LINE_BLOCKED_COLOR = 0x888888
 const WALL_COLOR = 0x555566
+const OBSTACLE_COLOR = 0x8b4513
 const GAUGE_BG_COLOR = 0x444444
 const GAUGE_FG_COLOR = 0x4caf50
 const HEALTH_FG_COLOR = 0xff4444
@@ -77,12 +79,21 @@ function drawCaptureZones(gfx: Graphics, captureZones: CaptureZone[]): void {
   }
 }
 
-function drawWalls(gfx: Graphics, obstacles: Obstacle[]): void {
+function drawWalls(gfx: Graphics, walls: Obstacle[]): void {
+  gfx.clear()
+  for (const wall of walls) {
+    gfx
+      .rect(wall.x * PIXELS_PER_INCH, wall.y * PIXELS_PER_INCH, wall.width * PIXELS_PER_INCH, wall.height * PIXELS_PER_INCH)
+      .fill(WALL_COLOR)
+  }
+}
+
+function drawObstacles(gfx: Graphics, obstacles: Obstacle[]): void {
   gfx.clear()
   for (const obs of obstacles) {
     gfx
       .rect(obs.x * PIXELS_PER_INCH, obs.y * PIXELS_PER_INCH, obs.width * PIXELS_PER_INCH, obs.height * PIXELS_PER_INCH)
-      .fill(WALL_COLOR)
+      .fill(OBSTACLE_COLOR)
   }
 }
 
@@ -207,7 +218,7 @@ function drawTargetLine(gfx: Graphics, game: GameState, attackDragState: AttackD
       width: 2 * UNIT_RADIUS_IN,
       height: 2 * UNIT_RADIUS_IN,
     }))
-  const losBlocked = !hasLineOfSight(from, to, [...game.obstacles, ...enemyObstacles])
+  const losBlocked = !hasLineOfSight(from, to, [...losBlockers(game), ...enemyObstacles])
   const color = losBlocked ? TARGET_LINE_BLOCKED_COLOR : TARGET_LINE_COLOR
 
   gfx
@@ -276,11 +287,13 @@ export function Board() {
       const bgGfx = new Graphics()
       const captureZonesGfx = new Graphics()
       const zonesGfx = new Graphics()
+      const obstaclesGfx = new Graphics()
       const gridGfx = new Graphics()
       const boardLayer = new Container()
       boardLayer.addChild(bgGfx)
       boardLayer.addChild(captureZonesGfx)
       boardLayer.addChild(zonesGfx)
+      boardLayer.addChild(obstaclesGfx)
       boardLayer.addChild(gridGfx)
 
       const arrowGfx = new Graphics()
@@ -296,7 +309,8 @@ export function Board() {
 
       drawBackground(bgGfx)
       drawCaptureZones(captureZonesGfx, ARENA_MAP.captureZones)
-      drawWalls(zonesGfx, ARENA_MAP.obstacles)
+      drawWalls(zonesGfx, ARENA_MAP.walls)
+      drawObstacles(obstaclesGfx, ARENA_MAP.obstacles)
       drawGridLines(gridGfx)
 
       app.stage.eventMode = 'static'

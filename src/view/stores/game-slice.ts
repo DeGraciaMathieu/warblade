@@ -15,6 +15,7 @@ const INITIAL_UNITS = [
 
 const initialGameState: GameState = {
   units: Object.fromEntries(INITIAL_UNITS.map((u) => [u.id, u])),
+  walls: ARENA_MAP.walls,
   obstacles: ARENA_MAP.obstacles,
   captureZones: ARENA_MAP.captureZones,
   activePlayerId: 1,

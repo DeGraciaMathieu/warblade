@@ -4,6 +4,7 @@ import { applyMove } from '../../engine/move'
 import { resolveAttack } from '../../engine/combat'
 import { endActivation } from '../../engine/turn'
 import { resolveTarget, distance, capPosition } from '../../domain/position'
+import { solidTerrain } from '../../domain/game-state'
 import { UNIT_RADIUS_IN } from '../constants'
 
 let flashCounter = 0
@@ -26,7 +27,7 @@ export const createUiSlice: StateCreator<GameStore, [['zustand/immer', never]], 
       state.game.activatedUnitId = unitId
       state.dragState = {
         unitId,
-        target: resolveTarget(unit.position, rawTarget, unit.remainingMove, state.game.obstacles, UNIT_RADIUS_IN),
+        target: resolveTarget(unit.position, rawTarget, unit.remainingMove, solidTerrain(state.game), UNIT_RADIUS_IN),
       }
     })
   },
@@ -36,7 +37,7 @@ export const createUiSlice: StateCreator<GameStore, [['zustand/immer', never]], 
       if (state.dragState === null) return
       const unit = state.game.units[state.dragState.unitId]
       if (unit === undefined) return
-      state.dragState.target = resolveTarget(unit.position, rawTarget, unit.remainingMove, state.game.obstacles, UNIT_RADIUS_IN)
+      state.dragState.target = resolveTarget(unit.position, rawTarget, unit.remainingMove, solidTerrain(state.game), UNIT_RADIUS_IN)
     })
   },
 
