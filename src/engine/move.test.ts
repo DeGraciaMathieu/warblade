@@ -7,6 +7,8 @@ const BASE_STATE: GameState = {
     'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 6 },
   },
   obstacles: [],
+  activePlayerId: 1,
+  activatedUnitId: null,
 }
 
 describe('applyMove', () => {
@@ -67,6 +69,7 @@ describe('applyMove', () => {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 0 },
       },
       obstacles: [],
+      activePlayerId: 1,
     }
 
     const { state, events } = applyMove(exhausted, 'unit-1', { x: 11, y: 10 })
@@ -81,6 +84,7 @@ describe('applyMove', () => {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 2 },
       },
       obstacles: [],
+      activePlayerId: 1,
     }
 
     const { state, events } = applyMove(partial, 'unit-1', { x: 14, y: 10 })

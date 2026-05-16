@@ -22,6 +22,8 @@ const makeUnit = (id: string, overrides: Partial<Unit> = {}): Unit => ({
 const makeState = (...units: Unit[]): GameState => ({
   units: Object.fromEntries(units.map((u) => [u.id, u])),
   obstacles: [],
+  activePlayerId: 1,
+  activatedUnitId: null,
 })
 
 describe('resolveAttack', () => {
@@ -43,7 +45,7 @@ describe('resolveAttack', () => {
     const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
     const target = makeUnit('b', { position: { x: 10, y: 0 } })
     const obstacle = { x: 4, y: -2, width: 2, height: 4 }
-    const state: GameState = { units: { a: attacker, b: target }, obstacles: [obstacle] }
+    const state: GameState = { units: { a: attacker, b: target }, obstacles: [obstacle], activePlayerId: 1, activatedUnitId: null }
     const { state: next, events } = resolveAttack(state, 'a', 'b', seededRng(1))
 
     expect(next).toEqual(state)
