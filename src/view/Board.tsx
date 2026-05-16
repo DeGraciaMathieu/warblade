@@ -13,12 +13,14 @@ import type { AttackDragState, DragState } from './game-store'
 import type { GameState } from '../domain/game-state'
 import type { Obstacle } from '../domain/obstacle'
 import type { UnitId } from '../domain/unit'
+import { hasLineOfSight } from '../domain/position'
 
 const GRID_COLOR = 0x2a2a2a
 const BOARD_BG_COLOR = 0x242424
 const UNIT_COLOR = 0x6ea8fe
 const ARROW_COLOR = 0xffd166
 const TARGET_LINE_COLOR = 0xff4444
+const TARGET_LINE_BLOCKED_COLOR = 0x888888
 const OBSTACLE_COLOR = 0x555555
 const GAUGE_BG_COLOR = 0x444444
 const GAUGE_FG_COLOR = 0x4caf50
@@ -135,16 +137,20 @@ function drawTargetLine(gfx: Graphics, game: GameState, attackDragState: AttackD
   const attacker = game.units[attackDragState.attackerId]
   if (attacker === undefined) return
 
-  const fromX = attacker.position.x * PIXELS_PER_INCH
-  const fromY = attacker.position.y * PIXELS_PER_INCH
-  const toX = attackDragState.target.x * PIXELS_PER_INCH
-  const toY = attackDragState.target.y * PIXELS_PER_INCH
+  const from = attacker.position
+  const to = attackDragState.target
 
-  const dx = toX - fromX
-  const dy = toY - fromY
+  const dx = (to.x - from.x) * PIXELS_PER_INCH
+  const dy = (to.y - from.y) * PIXELS_PER_INCH
   if (Math.sqrt(dx * dx + dy * dy) === 0) return
 
-  gfx.moveTo(fromX, fromY).lineTo(toX, toY).stroke({ color: TARGET_LINE_COLOR, width: 2, alpha: 0.8 })
+  const losBlocked = !hasLineOfSight(from, to, game.obstacles)
+  const color = losBlocked ? TARGET_LINE_BLOCKED_COLOR : TARGET_LINE_COLOR
+
+  gfx
+    .moveTo(from.x * PIXELS_PER_INCH, from.y * PIXELS_PER_INCH)
+    .lineTo(to.x * PIXELS_PER_INCH, to.y * PIXELS_PER_INCH)
+    .stroke({ color, width: 2, alpha: 0.8 })
 }
 
 export function Board() {
