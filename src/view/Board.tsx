@@ -33,6 +33,9 @@ const HEALTH_OFFSET_Y = GAUGE_OFFSET_Y + GAUGE_HEIGHT_PX + 2
 const DAMAGE_FLASH_DURATION_MS = 1500
 const DAMAGE_FLASH_FONT_SIZE = 14
 const DAMAGE_FLASH_DRIFT_PX = 24
+const SELECTED_OUTLINE_COLOR = 0xffffff
+const SELECTED_OUTLINE_WIDTH = 2
+const SELECTED_OUTLINE_GAP_PX = 3
 const DRAG_THRESHOLD_PX = 8
 
 function drawGrid(gfx: Graphics): void {
@@ -62,6 +65,7 @@ function drawObstacles(gfx: Graphics, obstacles: Obstacle[]): void {
 function drawUnits(
   container: Container,
   game: GameState,
+  selectedUnitId: string | null,
   onPendingDrag: (id: UnitId, x: number, y: number) => void,
   onAttackDragStart: (id: UnitId, x: number, y: number) => void,
 ): void {
@@ -72,6 +76,9 @@ function drawUnits(
     const gfx = new Graphics()
 
     const unitColor = unit.playerId === 1 ? PLAYER_1_COLOR : PLAYER_2_COLOR
+    if (unit.id === selectedUnitId) {
+      gfx.circle(0, 0, UNIT_RADIUS_PX + SELECTED_OUTLINE_GAP_PX).stroke({ color: SELECTED_OUTLINE_COLOR, width: SELECTED_OUTLINE_WIDTH })
+    }
     gfx.circle(0, 0, UNIT_RADIUS_PX).fill(unitColor)
 
     const moveRatio = unit.move > 0 ? unit.remainingMove / unit.move : 0
@@ -288,11 +295,12 @@ export function Board() {
         app.ticker.add(onTick)
       }
 
-      const unsubscribe = useGameStore.subscribe(({ game, dragState, attackDragState, damageFlashes, startAttackDrag }) => {
+      const unsubscribe = useGameStore.subscribe(({ game, dragState, attackDragState, damageFlashes, selectedUnitId, startAttackDrag }) => {
         drawObstacles(obstaclesGfx, game.obstacles)
         drawUnits(
           unitsLayer,
           game,
+          selectedUnitId,
           (id, x, y) => { pendingDrag = { unitId: id, startX: x, startY: y } },
           (id, x, y) => startAttackDrag(id, { x, y }),
         )
@@ -306,11 +314,12 @@ export function Board() {
         }
       })
 
-      const { game, dragState, attackDragState, startAttackDrag } = useGameStore.getState()
+      const { game, dragState, attackDragState, selectedUnitId, startAttackDrag } = useGameStore.getState()
       drawObstacles(obstaclesGfx, game.obstacles)
       drawUnits(
         unitsLayer,
         game,
+        selectedUnitId,
         (id, x, y) => { pendingDrag = { unitId: id, startX: x, startY: y } },
         (id, x, y) => startAttackDrag(id, { x, y }),
       )

@@ -152,6 +152,7 @@ export const useGameStore = create<GameStore>()(
 
         const { state, events } = resolveAttack(store.game, attackerId, targetUnit.id, Math.random)
         store.game = endActivation(state)
+        store.selectedUnitId = null
 
         for (const event of events) {
           if (event.type === 'attack-resolved') {
@@ -205,6 +206,7 @@ export const useGameStore = create<GameStore>()(
     endTurn: () => {
       set((store) => {
         store.game = endActivation(store.game)
+        store.selectedUnitId = null
       })
     },
   })),
