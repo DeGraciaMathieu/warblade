@@ -11,6 +11,7 @@ const makeUnit = (id: string, overrides: Partial<Unit> = {}): Unit => ({
   move: 14,
   remainingMove: 14,
   weapon: FUSIL,
+  availableWeapons: [FUSIL],
   wounds: 5,
   remainingWounds: 5,
   save: 5,
