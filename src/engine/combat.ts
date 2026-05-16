@@ -4,7 +4,7 @@ import type { UnitId } from '../domain/unit'
 import type { Obstacle } from '../domain/obstacle'
 import type { Rng } from '../domain/rng'
 import { UNIT_RADIUS_IN } from '../domain/unit'
-import { distance, hasLineOfSight } from '../domain/position'
+import { distance, hasLineOfSight, isInCover } from '../domain/position'
 
 type Resolution = {
   state: GameState
@@ -38,6 +38,8 @@ export const resolveAttack = (
 
   if (!hasLineOfSight(attacker.position, target.position, [...state.obstacles, ...enemyObstacles])) return { state, events: [] }
 
+  const inCover = isInCover(attacker.position, target.position, UNIT_RADIUS_IN, state.obstacles)
+
   const hitRolls: number[] = []
   let hits = 0
   for (let i = 0; i < attacker.weapon.attacks; i++) {
@@ -66,6 +68,7 @@ export const resolveAttack = (
     damageDealt,
     hitRolls,
     saveRolls,
+    inCover,
   }
 
   const newState: GameState = {

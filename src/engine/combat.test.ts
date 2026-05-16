@@ -116,6 +116,24 @@ describe('résolution d\'une attaque', () => {
     expect(next.units['b']?.remainingWounds).toBe(5)
   })
 
+  it('expose inCover false quand la cible est entièrement visible', () => {
+    const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
+    const target = makeUnit('b', { position: { x: 10, y: 0 } })
+    const state = makeState(attacker, target)
+    const { events } = resolveAttack(state, 'a', 'b', seededRng(1))
+    expect(events[0]).toMatchObject({ type: 'attack-resolved', inCover: false })
+  })
+
+  it('expose inCover true quand un obstacle bloque un bord de la cible', () => {
+    const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
+    const target = makeUnit('b', { position: { x: 10, y: 0 } })
+    // Obstacle bloque le bord nord de la cible mais pas son centre → LOS passe, couvert actif
+    const obstacle = { x: 9, y: -2, width: 2, height: 1.5 }
+    const state: GameState = { ...makeState(attacker, target), obstacles: [obstacle] }
+    const { events } = resolveAttack(state, 'a', 'b', seededRng(1))
+    expect(events[0]).toMatchObject({ type: 'attack-resolved', inCover: true })
+  })
+
   it('remainingWounds ne descend pas en dessous de 0', () => {
     const alwaysHit: () => number = () => 0.99
     const attacker = makeUnit('a', {
