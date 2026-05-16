@@ -112,7 +112,7 @@ export const useGameStore = create<GameStore>()(
       set((store) => {
         if (store.dragState === null) return
         const { unitId, target } = store.dragState
-        const { state } = applyMove(store.game, unitId, target)
+        const { state } = applyMove(store.game, unitId, target, UNIT_RADIUS_IN)
         store.game = state
         store.dragState = null
       })
