@@ -24,6 +24,7 @@ function makeUnit(id: string, playerId: 1 | 2, x: number, y: number, overrides: 
 function makeState(units: Unit[], overrides: Partial<GameState> = {}): GameState {
   return {
     units: Object.fromEntries(units.map((u) => [u.id, u])),
+    walls: [],
     obstacles: [],
     activePlayerId: 2,
     activatedUnitId: null,
@@ -80,11 +81,11 @@ describe('décision de l\'IA', () => {
     expect(decide(state)).toEqual({ type: 'end-turn' })
   })
 
-  it('does not attack when an obstacle blocks LOS', () => {
-    const obstacle: Obstacle = { x: 2, y: -1, width: 1, height: 3 }
+  it('ne attaque pas quand un mur bloque la LOS', () => {
+    const wall: Obstacle = { x: 2, y: -1, width: 1, height: 3 }
     const state = makeState(
       [makeUnit('p1', 1, 5, 0), makeUnit('p2', 2, 0, 0)],
-      { obstacles: [obstacle] },
+      { walls: [wall] },
     )
     const decision = decide(state)
     expect(decision?.type).toBe('move')

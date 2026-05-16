@@ -1,5 +1,6 @@
 import { distance, hasLineOfSight } from '../domain/position'
 import type { GameState } from '../domain/game-state'
+import { losBlockers, solidTerrain } from '../domain/game-state'
 import type { Unit, UnitId, Position } from '../domain/unit'
 import { UNIT_RADIUS_IN } from '../domain/unit'
 import type { Obstacle } from '../domain/obstacle'
@@ -30,7 +31,7 @@ export function decide(state: GameState): AiDecision | null {
 
   if (unit.remainingMove > 0) {
     const nearest = nearestUnit(unit.position, enemies)
-    const target = moveToward(unit.position, nearest.position, unit.remainingMove, state.obstacles)
+    const target = moveToward(unit.position, nearest.position, unit.remainingMove, solidTerrain(state))
     if (distance(unit.position, target) < STUCK_THRESHOLD_IN) return { type: 'end-turn' }
     return { type: 'move', unitId: unit.id, target }
   }
@@ -54,7 +55,7 @@ function findAttackTarget(unit: Unit, enemies: Unit[], state: GameState): Unit |
     enemies.find(
       (e) =>
         distance(unit.position, e.position) <= unit.weapon.range &&
-        hasLineOfSight(unit.position, e.position, state.obstacles),
+        hasLineOfSight(unit.position, e.position, losBlockers(state)),
     ) ?? null
   )
 }
