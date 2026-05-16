@@ -3,11 +3,11 @@ import { EPEE, FUSIL, SNIPER } from './weapons'
 
 export const INFANTRY_MOVE_IN = 14
 export const INFANTRY_WOUNDS = 5
-export const INFANTRY_SAVE = 5
+export const INFANTRY_SAVE = 4
 
 export const SNIPER_MOVE_IN = 10
 export const SNIPER_WOUNDS = 4
-export const SNIPER_SAVE = 5
+export const SNIPER_SAVE = 4
 
 export const createInfantry = (id: string, playerId: PlayerId, x: number, y: number): Unit => ({
   id,
