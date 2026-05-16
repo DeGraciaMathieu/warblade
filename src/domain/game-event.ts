@@ -13,6 +13,8 @@ export type AttackResolvedEvent = {
   targetId: UnitId
   hits: number
   damageDealt: number
+  hitRolls: number[]
+  saveRolls: number[]
 }
 
 export type GameEvent = UnitMovedEvent | AttackResolvedEvent
