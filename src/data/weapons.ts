@@ -10,7 +10,7 @@ export const FUSIL: Weapon = {
 
 export const EPEE: Weapon = {
   name: 'Épée',
-  range: 3,
+  range: 5,
   attacks: 3,
   toHit: 3,
   damage: 1,
