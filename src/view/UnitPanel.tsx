@@ -13,8 +13,12 @@ export function UnitPanel() {
 
   return (
     <div style={styles.panel}>
-      <div style={styles.title}>Unité {selectedUnitId}</div>
-      <div style={styles.section}>Armes</div>
+      <div style={styles.title}>{unit.name}</div>
+      <div style={styles.section}>Statistiques</div>
+      <div style={styles.statRow}>Mouvement : {Math.round(unit.remainingMove)}/{unit.move}</div>
+      <div style={styles.statRow}>PV : {unit.remainingWounds}/{unit.wounds}</div>
+      <div style={styles.statRow}>Sauvegarde : {unit.save}+</div>
+      <div style={{ ...styles.section, marginTop: '8px' }}>Armes</div>
       {unit.availableWeapons.map((weapon) => (
         <WeaponButton
           key={weapon.name}
@@ -87,5 +91,9 @@ const styles = {
   weaponStats: {
     fontSize: '11px',
     color: '#888',
+  },
+  statRow: {
+    fontSize: '12px',
+    color: '#ccc',
   },
 }
