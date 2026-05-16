@@ -13,6 +13,7 @@ export type Unit = {
   move: number
   remainingMove: number
   weapon: Weapon
+  availableWeapons: Weapon[]
   wounds: number
   remainingWounds: number
   save: number
