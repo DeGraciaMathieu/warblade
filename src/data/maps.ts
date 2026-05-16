@@ -28,26 +28,26 @@ const DUNGEON_ZONES: MapZone[] = [
   { x: 35, y: 30, width: 8,  height: 8,  type: 'room' },
 
   // ── Couloirs verticaux — déploiement Nord → pièces ─────────────────────
-  { x: 7,  y: 5,  width: 3,  height: 5,  type: 'corridor' },
-  { x: 38, y: 5,  width: 3,  height: 5,  type: 'corridor' },
-  { x: 23, y: 5,  width: 3,  height: 13, type: 'corridor' },
+  { x: 7,  y: 5,  width: 4,  height: 5,  type: 'corridor' },
+  { x: 38, y: 5,  width: 4,  height: 5,  type: 'corridor' },
+  { x: 22, y: 5,  width: 4,  height: 13, type: 'corridor' },
 
   // ── Couloirs horizontaux — pièces Nord → centre ────────────────────────
-  { x: 13, y: 13, width: 10, height: 3,  type: 'corridor' },
-  { x: 25, y: 13, width: 10, height: 3,  type: 'corridor' },
+  { x: 13, y: 12, width: 10, height: 4,  type: 'corridor' },
+  { x: 25, y: 12, width: 10, height: 4,  type: 'corridor' },
 
   // ── Couloirs verticaux — flancs (NW↔SW, NE↔SE) ────────────────────────
-  { x: 7,  y: 18, width: 3,  height: 12, type: 'corridor' },
-  { x: 38, y: 18, width: 3,  height: 12, type: 'corridor' },
+  { x: 7,  y: 18, width: 4,  height: 12, type: 'corridor' },
+  { x: 38, y: 18, width: 4,  height: 12, type: 'corridor' },
 
   // ── Couloirs horizontaux — pièces Sud → centre ─────────────────────────
-  { x: 13, y: 32, width: 10, height: 3,  type: 'corridor' },
-  { x: 25, y: 32, width: 10, height: 3,  type: 'corridor' },
+  { x: 13, y: 32, width: 10, height: 4,  type: 'corridor' },
+  { x: 25, y: 32, width: 10, height: 4,  type: 'corridor' },
 
   // ── Couloirs verticaux — pièces → déploiement Sud ──────────────────────
-  { x: 7,  y: 38, width: 3,  height: 5,  type: 'corridor' },
-  { x: 38, y: 38, width: 3,  height: 5,  type: 'corridor' },
-  { x: 23, y: 30, width: 3,  height: 13, type: 'corridor' },
+  { x: 7,  y: 38, width: 4,  height: 5,  type: 'corridor' },
+  { x: 38, y: 38, width: 4,  height: 5,  type: 'corridor' },
+  { x: 22, y: 30, width: 4,  height: 13, type: 'corridor' },
 ]
 
 export const LABYRINTH_MAP: MapData = {
