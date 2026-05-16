@@ -9,4 +9,5 @@ export type Unit = {
   id: UnitId
   position: Position
   move: number
+  remainingMove: number
 }
