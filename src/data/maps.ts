@@ -3,6 +3,7 @@ import type { CaptureZone } from '../domain/capture-zone'
 
 export type MapData = {
   captureZones: CaptureZone[]
+  walls: Obstacle[]
   obstacles: Obstacle[]
 }
 
@@ -51,12 +52,12 @@ function obstaclesFromTiles(
 }
 
 export function ingestMap(json: MapJson): MapData {
-  const allTiles: [number, number][] = [...json.walls, ...json.obstacles]
-  const obstacles = obstaclesFromTiles(json.width, json.height, allTiles)
+  const walls = obstaclesFromTiles(json.width, json.height, json.walls)
+  const obstacles = obstaclesFromTiles(json.width, json.height, json.obstacles)
   const captureZones: CaptureZone[] = json.zones.length > 0
     ? [{ tiles: json.zones.map(([x, y]) => ({ x, y })) }]
     : []
-  return { obstacles, captureZones }
+  return { walls, obstacles, captureZones }
 }
 
 export const ARENA_MAP: MapData = {
@@ -108,8 +109,7 @@ export const ARENA_MAP: MapData = {
       ].map(([x, y]) => ({ x, y })),
     },
   ],
-  obstacles: obstaclesFromTiles(50, 40, [
-    // walls
+  walls: obstaclesFromTiles(50, 40, [
     [0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0],[24,0],[25,0],[26,0],[27,0],[28,0],[29,0],[30,0],[31,0],[32,0],[33,0],[34,0],[35,0],[36,0],[37,0],[38,0],[39,0],[40,0],[41,0],[42,0],[43,0],[44,0],[45,0],[46,0],[47,0],[48,0],[49,0],
     [0,1],[13,1],[14,1],[15,1],[16,1],[17,1],[18,1],[19,1],[30,1],[31,1],[32,1],[33,1],[34,1],[35,1],[36,1],[49,1],
     [0,2],[13,2],[14,2],[15,2],[16,2],[17,2],[18,2],[19,2],[30,2],[31,2],[32,2],[33,2],[34,2],[35,2],[36,2],[49,2],
@@ -144,7 +144,8 @@ export const ARENA_MAP: MapData = {
     [0,37],[13,37],[14,37],[15,37],[16,37],[17,37],[18,37],[19,37],[30,37],[31,37],[32,37],[33,37],[34,37],[35,37],[36,37],[49,37],
     [0,38],[13,38],[14,38],[15,38],[16,38],[17,38],[18,38],[19,38],[30,38],[31,38],[32,38],[33,38],[34,38],[35,38],[36,38],[49,38],
     [0,39],[1,39],[2,39],[3,39],[4,39],[5,39],[6,39],[7,39],[8,39],[9,39],[10,39],[11,39],[12,39],[13,39],[14,39],[15,39],[16,39],[17,39],[18,39],[19,39],[20,39],[21,39],[22,39],[23,39],[24,39],[25,39],[26,39],[27,39],[28,39],[29,39],[30,39],[31,39],[32,39],[33,39],[34,39],[35,39],[36,39],[37,39],[38,39],[39,39],[40,39],[41,39],[42,39],[43,39],[44,39],[45,39],[46,39],[47,39],[48,39],[49,39],
-    // obstacles
+  ]),
+  obstacles: obstaclesFromTiles(50, 40, [
     [5,5],[6,5],[7,5],[42,5],[43,5],[44,5],
     [5,6],[6,6],[7,6],[42,6],[43,6],[44,6],
     [5,7],[6,7],[7,7],[42,7],[43,7],[44,7],
@@ -162,6 +163,7 @@ export const ARENA_MAP: MapData = {
 
 export const LABYRINTH_MAP: MapData = {
   captureZones: [],
+  walls: [],
   obstacles: obstaclesFromTiles(40, 36, [
     // barrières horizontales hautes (y=5-6)
     [4,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[11,5],

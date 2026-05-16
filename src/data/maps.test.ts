@@ -2,28 +2,31 @@ import { describe, it, expect } from 'vitest'
 import { ingestMap } from './maps'
 
 describe('ingestion d une map JSON', () => {
-  it('convertit les walls en obstacles rectangulaires', () => {
+  it('convertit les walls en rectangles dans MapData.walls', () => {
     const map = ingestMap({ width: 4, height: 1, walls: [[0, 0], [1, 0], [2, 0], [3, 0]], zones: [], obstacles: [] })
 
-    expect(map.obstacles).toEqual([{ x: 0, y: 0, width: 4, height: 1 }])
+    expect(map.walls).toEqual([{ x: 0, y: 0, width: 4, height: 1 }])
+    expect(map.obstacles).toEqual([])
   })
 
-  it('convertit les obstacles JSON en obstacles rectangulaires', () => {
+  it('convertit les obstacles JSON en rectangles dans MapData.obstacles', () => {
     const map = ingestMap({ width: 4, height: 1, walls: [], zones: [], obstacles: [[0, 0], [1, 0], [2, 0], [3, 0]] })
 
     expect(map.obstacles).toEqual([{ x: 0, y: 0, width: 4, height: 1 }])
+    expect(map.walls).toEqual([])
   })
 
-  it('fusionne walls et obstacles JSON en un seul tableau', () => {
+  it('garde walls et obstacles séparés', () => {
     const map = ingestMap({ width: 3, height: 2, walls: [[0, 0]], zones: [], obstacles: [[2, 1]] })
 
-    const totalArea = map.obstacles.reduce((s, o) => s + o.width * o.height, 0)
-    expect(totalArea).toBe(2)
+    expect(map.walls).toEqual([{ x: 0, y: 0, width: 1, height: 1 }])
+    expect(map.obstacles).toEqual([{ x: 2, y: 1, width: 1, height: 1 }])
   })
 
-  it('retourne obstacles vide quand walls et obstacles sont vides', () => {
+  it('retourne walls et obstacles vides quand les deux sont vides', () => {
     const map = ingestMap({ width: 4, height: 4, walls: [], zones: [], obstacles: [] })
 
+    expect(map.walls).toEqual([])
     expect(map.obstacles).toEqual([])
   })
 
