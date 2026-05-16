@@ -2,21 +2,21 @@ import type { StateCreator } from 'zustand'
 import type { GameState } from '../../domain/game-state'
 import type { GameSlice, GameStore } from './types'
 import { createInfantry, createSniper } from '../../data/units'
-import { LABYRINTH_MAP } from '../../data/maps'
+import { ARENA_MAP } from '../../data/maps'
 
 const INITIAL_UNITS = [
-  createInfantry('p1-1', 1, 8, 2),
-  createInfantry('p1-2', 1, 20, 2),
-  createSniper('p1-3', 1, 32, 2),
-  createInfantry('p2-1', 2, 8, 33),
-  createInfantry('p2-2', 2, 20, 33),
-  createSniper('p2-3', 2, 32, 33),
+  createInfantry('p1-1', 1, 2, 2),
+  createInfantry('p1-2', 1, 6, 2),
+  createSniper('p1-3', 1, 10, 2),
+  createInfantry('p2-1', 2, 39, 37),
+  createInfantry('p2-2', 2, 43, 37),
+  createSniper('p2-3', 2, 47, 37),
 ]
 
 const initialGameState: GameState = {
   units: Object.fromEntries(INITIAL_UNITS.map((u) => [u.id, u])),
-  obstacles: LABYRINTH_MAP.obstacles,
-  captureZones: LABYRINTH_MAP.captureZones,
+  obstacles: ARENA_MAP.obstacles,
+  captureZones: ARENA_MAP.captureZones,
   activePlayerId: 1,
   activatedUnitId: null,
   phase: 1,

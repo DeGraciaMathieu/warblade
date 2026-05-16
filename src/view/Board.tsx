@@ -11,7 +11,7 @@ import {
 import { useGameStore } from './game-store'
 import type { AttackDragState, DamageFlash, DragState } from './game-store'
 import type { GameState } from '../domain/game-state'
-import { LABYRINTH_MAP } from '../data/maps'
+import { ARENA_MAP } from '../data/maps'
 import type { UnitId } from '../domain/unit'
 import { UNIT_RADIUS_IN } from '../domain/unit'
 import { hasLineOfSight, distance, isInCover } from '../domain/position'
@@ -295,8 +295,8 @@ export function Board() {
       const damageLayer = new Container()
 
       drawBackground(bgGfx)
-      drawCaptureZones(captureZonesGfx, LABYRINTH_MAP.captureZones)
-      drawWalls(zonesGfx, LABYRINTH_MAP.obstacles)
+      drawCaptureZones(captureZonesGfx, ARENA_MAP.captureZones)
+      drawWalls(zonesGfx, ARENA_MAP.obstacles)
       drawGridLines(gridGfx)
 
       app.stage.eventMode = 'static'
