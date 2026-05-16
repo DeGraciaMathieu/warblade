@@ -19,16 +19,6 @@
 
 dépendance unidirectionnelle stricte : view → engine → domain. jamais l'inverse.
 
-## démarrer une tâche
-
-utiliser les slash commands selon le type de travail :
-
-- `/feature` — nouvelle fonctionnalité ou évolution.
-- `/fix` — correction de bug.
-- `/refactor` — refactorisation sans changement de comportement.
-
-ces commandes cadrent la session : elles recueillent le périmètre, proposent un plan, et garantissent le respect de la boucle de travail. ne pas démarrer une tâche non triviale sans passer par une commande.
-
 ## boucle de travail
 
 pour chaque tâche, suivre ce cycle sans le raccourcir :
