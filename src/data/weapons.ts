@@ -15,3 +15,11 @@ export const EPEE: Weapon = {
   toHit: 3,
   damage: 1,
 }
+
+export const SNIPER: Weapon = {
+  name: 'Sniper',
+  range: 36,
+  attacks: 1,
+  toHit: 3,
+  damage: 3,
+}
