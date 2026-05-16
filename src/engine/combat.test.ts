@@ -80,8 +80,8 @@ describe('resolveAttack', () => {
     const target = makeUnit('b', { position: { x: 10, y: 0 }, wounds: 5, remainingWounds: 5, save: 7 }) // save impossible
     const state = makeState(attacker, target)
     const { state: next } = resolveAttack(state, 'a', 'b', alwaysHit)
-    // 2 attaques, toutes touchent, save impossible → 2 dégâts × 1 = 2
-    expect(next.units['b']?.remainingWounds).toBe(3)
+    // 3 attaques, toutes touchent, save impossible → 3 dégâts × 1 = 3
+    expect(next.units['b']?.remainingWounds).toBe(2)
   })
 
   it('les sauvegardes réussies annulent les dégâts', () => {
