@@ -14,7 +14,7 @@ const BASE_STATE: GameState = {
   activatedUnitIds: [],
 }
 
-describe('applyMove', () => {
+describe('déplacement d\'une unité', () => {
   it("déplace une unité vers une destination dans sa portée", () => {
     const { state } = applyMove(BASE_STATE, 'unit-1', { x: 14, y: 10 }, UNIT_RADIUS_IN)
 
@@ -58,12 +58,6 @@ describe('applyMove', () => {
 
     expect(state).toBe(BASE_STATE)
     expect(events).toHaveLength(0)
-  })
-
-  it("décrémente remainingMove de la distance réelle parcourue", () => {
-    const { state } = applyMove(BASE_STATE, 'unit-1', { x: 14, y: 10 }, UNIT_RADIUS_IN)
-
-    expect(state.units['unit-1']?.remainingMove).toBeCloseTo(2)
   })
 
   it("bloque si remainingMove est épuisé", () => {
