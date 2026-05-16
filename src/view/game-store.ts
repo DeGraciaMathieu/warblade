@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 import type { GameState } from '../domain/game-state'
 import type { UnitId, Position } from '../domain/unit'
 import type { Weapon } from '../domain/weapon'
+import type { AttackResolvedEvent } from '../domain/game-event'
 import { applyMove } from '../engine/move'
 import { resolveAttack } from '../engine/combat'
 import { resolveTarget, distance, capPosition } from '../domain/position'
@@ -32,6 +33,7 @@ type GameStore = {
   attackDragState: AttackDragState | null
   damageFlashes: DamageFlash[]
   selectedUnitId: UnitId | null
+  lastAttackResult: AttackResolvedEvent | null
   startDrag: (unitId: UnitId, rawTarget: Position) => void
   updateDrag: (rawTarget: Position) => void
   endDrag: () => void
@@ -63,6 +65,7 @@ export const useGameStore = create<GameStore>()(
     attackDragState: null,
     damageFlashes: [],
     selectedUnitId: null,
+    lastAttackResult: null,
 
     startDrag: (unitId, rawTarget) => {
       set((store) => {
@@ -125,14 +128,17 @@ export const useGameStore = create<GameStore>()(
         store.game = state
 
         for (const event of events) {
-          if (event.type === 'attack-resolved' && event.damageDealt > 0) {
-            const hit = state.units[event.targetId]
-            if (hit === undefined) continue
-            store.damageFlashes.push({
-              id: `flash-${flashCounter++}`,
-              position: hit.position,
-              amount: event.damageDealt,
-            })
+          if (event.type === 'attack-resolved') {
+            store.lastAttackResult = event
+            if (event.damageDealt > 0) {
+              const hit = state.units[event.targetId]
+              if (hit === undefined) continue
+              store.damageFlashes.push({
+                id: `flash-${flashCounter++}`,
+                position: hit.position,
+                amount: event.damageDealt,
+              })
+            }
           }
         }
       })
