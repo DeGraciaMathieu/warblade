@@ -2,8 +2,14 @@
 
 ## stack
 
-typescript strict, vite, pixi.js v8, zustand + immer, vitest, flatten-js.
-full client-side, pas de backend.
+- typescript strict
+- vite
+- pixi.js v8
+- zustand + immer
+- vitest, flatten-js
+- full client-side, pas de backend
+- Node.js 22+ requis (`nvm use 22`)
+- Tests : `source ~/.nvm/nvm.sh && nvm use 22 && npx vitest run`
 
 ## architecture en trois couches
 
