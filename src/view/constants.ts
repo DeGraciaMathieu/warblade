@@ -1,11 +1,11 @@
 import { BOARD_WIDTH_IN, BOARD_HEIGHT_IN } from '../domain/board'
+import { UNIT_RADIUS_IN } from '../domain/unit'
 
-export { BOARD_WIDTH_IN, BOARD_HEIGHT_IN }
+export { BOARD_WIDTH_IN, BOARD_HEIGHT_IN, UNIT_RADIUS_IN }
 
 export const PIXELS_PER_INCH = 16
 
 export const BOARD_WIDTH_PX = BOARD_WIDTH_IN * PIXELS_PER_INCH
 export const BOARD_HEIGHT_PX = BOARD_HEIGHT_IN * PIXELS_PER_INCH
 
-export const UNIT_RADIUS_PX = 15
-export const UNIT_RADIUS_IN = UNIT_RADIUS_PX / PIXELS_PER_INCH
+export const UNIT_RADIUS_PX = UNIT_RADIUS_IN * PIXELS_PER_INCH

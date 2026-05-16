@@ -1,5 +1,7 @@
 import type { Weapon } from './weapon'
 
+export const UNIT_RADIUS_IN = 0.9375
+
 export type UnitId = string
 
 export type Position = {
