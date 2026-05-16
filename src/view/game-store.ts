@@ -154,8 +154,9 @@ export const useGameStore = create<GameStore>()(
       set((store) => {
         const unit = store.game.units[unitId]
         if (unit === undefined) return
-        if (!unit.availableWeapons.includes(weapon)) return
-        unit.weapon = weapon
+        const match = unit.availableWeapons.find((w) => w.name === weapon.name)
+        if (match === undefined) return
+        unit.weapon = match
       })
     },
   })),
