@@ -7,6 +7,7 @@ export const INFANTRY_SAVE = 5
 
 export const createInfantry = (id: string, playerId: PlayerId, x: number, y: number): Unit => ({
   id,
+  name: 'Space Marine',
   playerId,
   position: { x, y },
   move: INFANTRY_MOVE_IN,
