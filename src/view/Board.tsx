@@ -274,7 +274,7 @@ export function Board() {
     let initResolved = false
     let cleanedUp = false
 
-    void app.init({ resizeTo: window, background: '#1a1a1a', antialias: true }).then(() => {
+    void app.init({ resizeTo: container, background: '#1a1a1a', antialias: true }).then(() => {
       initResolved = true
       if (cleanedUp) {
         app.destroy(true)
@@ -322,12 +322,13 @@ export function Board() {
       app.stage.addChild(damageLayer)
 
       const center = () => {
-        const offsetX = Math.round((app.screen.width - BOARD_WIDTH_PX) / 2)
-        const offsetY = Math.round((app.screen.height - BOARD_HEIGHT_PX) / 2)
-        boardLayer.position.set(offsetX, offsetY)
-        arrowLayer.position.set(offsetX, offsetY)
-        unitsLayer.position.set(offsetX, offsetY)
-        damageLayer.position.set(offsetX, offsetY)
+        const scale = Math.min(app.screen.width / BOARD_WIDTH_PX, app.screen.height / BOARD_HEIGHT_PX)
+        const offsetX = Math.round((app.screen.width - BOARD_WIDTH_PX * scale) / 2)
+        const offsetY = Math.round((app.screen.height - BOARD_HEIGHT_PX * scale) / 2)
+        for (const layer of [boardLayer, arrowLayer, unitsLayer, damageLayer]) {
+          layer.scale.set(scale)
+          layer.position.set(offsetX, offsetY)
+        }
       }
 
       center()
