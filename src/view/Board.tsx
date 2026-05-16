@@ -11,7 +11,6 @@ import {
 import { useGameStore } from './game-store'
 import type { AttackDragState, DamageFlash, DragState } from './game-store'
 import type { GameState } from '../domain/game-state'
-import type { MapZone } from '../domain/map-zone'
 import { LABYRINTH_MAP } from '../data/maps'
 import type { UnitId } from '../domain/unit'
 import { UNIT_RADIUS_IN } from '../domain/unit'
@@ -25,8 +24,7 @@ const PLAYER_2_COLOR = 0xe85d5d
 const ARROW_COLOR = 0xffd166
 const TARGET_LINE_COLOR = 0xff4444
 const TARGET_LINE_BLOCKED_COLOR = 0x888888
-const ROOM_FLOOR_COLOR = 0x3a3a3a
-const CORRIDOR_FLOOR_COLOR = 0x2f2f2f
+const WALL_COLOR = 0x555566
 const GAUGE_BG_COLOR = 0x444444
 const GAUGE_FG_COLOR = 0x4caf50
 const HEALTH_FG_COLOR = 0xff4444
@@ -63,13 +61,12 @@ function drawGridLines(gfx: Graphics): void {
   }
 }
 
-function drawZones(gfx: Graphics, zones: MapZone[]): void {
+function drawWalls(gfx: Graphics, obstacles: Obstacle[]): void {
   gfx.clear()
-  for (const zone of zones) {
-    const color = zone.type === 'room' ? ROOM_FLOOR_COLOR : CORRIDOR_FLOOR_COLOR
+  for (const obs of obstacles) {
     gfx
-      .rect(zone.x * PIXELS_PER_INCH, zone.y * PIXELS_PER_INCH, zone.width * PIXELS_PER_INCH, zone.height * PIXELS_PER_INCH)
-      .fill(color)
+      .rect(obs.x * PIXELS_PER_INCH, obs.y * PIXELS_PER_INCH, obs.width * PIXELS_PER_INCH, obs.height * PIXELS_PER_INCH)
+      .fill(WALL_COLOR)
   }
 }
 
@@ -251,7 +248,7 @@ export function Board() {
       const damageLayer = new Container()
 
       drawBackground(bgGfx)
-      drawZones(zonesGfx, LABYRINTH_MAP.zones)
+      drawWalls(zonesGfx, LABYRINTH_MAP.obstacles)
       drawGridLines(gridGfx)
 
       app.stage.eventMode = 'static'

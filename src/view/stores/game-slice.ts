@@ -5,12 +5,12 @@ import { createInfantry, createSniper } from '../../data/units'
 import { LABYRINTH_MAP } from '../../data/maps'
 
 const INITIAL_UNITS = [
-  createInfantry('p1-1', 1, 6, 3),
-  createInfantry('p1-2', 1, 24, 3),
-  createSniper('p1-3', 1, 42, 3),
-  createInfantry('p2-1', 2, 6, 45),
-  createInfantry('p2-2', 2, 24, 45),
-  createSniper('p2-3', 2, 42, 45),
+  createInfantry('p1-1', 1, 6, 2),
+  createInfantry('p1-2', 1, 14, 2),
+  createSniper('p1-3', 1, 22, 2),
+  createInfantry('p2-1', 2, 6, 24),
+  createInfantry('p2-2', 2, 14, 24),
+  createSniper('p2-3', 2, 22, 24),
 ]
 
 const initialGameState: GameState = {
