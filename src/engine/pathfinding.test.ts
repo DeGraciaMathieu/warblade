@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { findPath, truncatePath } from './pathfinding'
+import { findPath, truncatePath, pathLength } from './pathfinding'
 
 describe('calcul du chemin contournant les obstacles', () => {
   it('retourne un chemin direct si aucun obstacle ne bloque le trajet', () => {
@@ -55,5 +55,12 @@ describe('troncature du chemin à une distance max', () => {
 
   it('retourne le chemin d\'un seul point sans erreur', () => {
     expect(truncatePath([{ x: 3, y: 3 }], 5)).toEqual([{ x: 3, y: 3 }])
+  })
+
+  it('la longueur du chemin tronqué ne dépasse jamais maxDist, même sur un chemin multi-segments', () => {
+    const path = [{ x: 0, y: 0 }, { x: 5, y: 3 }, { x: 20, y: 20 }]
+    const maxDist = 7
+    const truncated = truncatePath(path, maxDist)
+    expect(pathLength(truncated)).toBeLessThanOrEqual(maxDist)
   })
 })
