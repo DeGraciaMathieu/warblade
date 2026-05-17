@@ -78,6 +78,24 @@ describe('création d\'un sniper', () => {
   })
 })
 
+describe('emoji de type d\'unité', () => {
+  it('l\'infanterie a un emoji distinct', () => {
+    const unit = createInfantry('u1', 1, 0, 0)
+    expect(unit.emoji).toBeTruthy()
+  })
+
+  it('le sniper a un emoji distinct', () => {
+    const unit = createSniper('s1', 1, 0, 0)
+    expect(unit.emoji).toBeTruthy()
+  })
+
+  it('l\'infanterie et le sniper ont des emojis différents', () => {
+    const infantry = createInfantry('i', 1, 0, 0)
+    const sniper = createSniper('s', 1, 0, 0)
+    expect(infantry.emoji).not.toBe(sniper.emoji)
+  })
+})
+
 describe('différences entre profils', () => {
   it('l\'infanterie a plus de blessures que le sniper', () => {
     const infantry = createInfantry('i', 1, 0, 0)

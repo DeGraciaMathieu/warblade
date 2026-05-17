@@ -6,6 +6,7 @@ import type { Unit } from './unit'
 const makeUnit = (id: string, playerId: 1 | 2, position: { x: number; y: number }): Unit => ({
   id,
   name: 'Marine',
+  emoji: '⚔️',
   playerId,
   position,
   move: 6,

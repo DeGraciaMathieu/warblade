@@ -8,6 +8,7 @@ function makeUnit(id: string, playerId: 1 | 2, x: number, y: number, overrides: 
   return {
     id,
     name: 'Test',
+    emoji: '⚔️',
     playerId,
     position: { x, y },
     move: 6,

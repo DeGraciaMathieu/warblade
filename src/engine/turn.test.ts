@@ -6,6 +6,7 @@ import type { Unit } from '../domain/unit'
 const makeUnit = (id: string, playerId: 1 | 2, overrides: Partial<Unit> = {}): Unit => ({
   id,
   name: 'Marine',
+  emoji: '⚔️',
   playerId,
   position: { x: 0, y: 0 },
   move: 6,

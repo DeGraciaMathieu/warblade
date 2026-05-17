@@ -8,6 +8,7 @@ import { FUSIL } from '../data/weapons'
 const makeUnit = (id: string, overrides: Partial<Unit> = {}): Unit => ({
   id,
   name: 'Marine',
+  emoji: '⚔️',
   playerId: 1,
   position: { x: 0, y: 0 },
   move: 14,
