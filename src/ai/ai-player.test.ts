@@ -26,10 +26,12 @@ function makeState(units: Unit[], overrides: Partial<GameState> = {}): GameState
     units: Object.fromEntries(units.map((u) => [u.id, u])),
     walls: [],
     obstacles: [],
+    captureZones: [],
     activePlayerId: 2,
     activatedUnitId: null,
     phase: 1,
     activatedUnitIds: [],
+    gameOver: false,
     ...overrides,
   }
 }
