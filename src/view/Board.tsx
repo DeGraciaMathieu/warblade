@@ -166,19 +166,20 @@ function drawArrow(gfx: Graphics, game: GameState, dragState: DragState | null):
   const unit = game.units[dragState.unitId]
   if (unit === undefined) return
 
-  const fromX = unit.position.x * PIXELS_PER_INCH
-  const fromY = unit.position.y * PIXELS_PER_INCH
-  const toX = dragState.target.x * PIXELS_PER_INCH
-  const toY = dragState.target.y * PIXELS_PER_INCH
+  const path = dragState.path
+  if (path.length < 2) return
 
-  const dx = toX - fromX
-  const dy = toY - fromY
-  const dist = Math.sqrt(dx * dx + dy * dy)
-  if (dist === 0) return
+  gfx.moveTo(path[0]!.x * PIXELS_PER_INCH, path[0]!.y * PIXELS_PER_INCH)
+  for (let i = 1; i < path.length; i++) {
+    gfx.lineTo(path[i]!.x * PIXELS_PER_INCH, path[i]!.y * PIXELS_PER_INCH)
+  }
+  gfx.stroke({ color: ARROW_COLOR, width: 2 })
 
-  gfx.moveTo(fromX, fromY).lineTo(toX, toY).stroke({ color: ARROW_COLOR, width: 2 })
-
-  const angle = Math.atan2(dy, dx)
+  const last = path[path.length - 1]!
+  const prev = path[path.length - 2]!
+  const toX = last.x * PIXELS_PER_INCH
+  const toY = last.y * PIXELS_PER_INCH
+  const angle = Math.atan2(last.y - prev.y, last.x - prev.x)
   const headLen = 10
   const headAngle = Math.PI / 6
 

@@ -6,6 +6,8 @@ import type { AttackResolvedEvent } from '../../domain/game-event'
 export type DragState = {
   unitId: UnitId
   target: Position
+  path: Position[]
+  pathLength: number
 }
 
 export type AttackDragState = {

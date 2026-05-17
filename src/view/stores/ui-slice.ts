@@ -3,8 +3,9 @@ import type { UiSlice, GameStore } from './types'
 import { applyMove } from '../../engine/move'
 import { resolveAttack } from '../../engine/combat'
 import { endActivation } from '../../engine/turn'
-import { resolveTarget, distance, capPosition } from '../../domain/position'
+import { distance, capPosition } from '../../domain/position'
 import { solidTerrain } from '../../domain/game-state'
+import { findPath, truncatePath, pathLength } from '../../engine/pathfinding'
 import { UNIT_RADIUS_IN } from '../constants'
 
 let flashCounter = 0
@@ -25,9 +26,13 @@ export const createUiSlice: StateCreator<GameStore, [['zustand/immer', never]], 
       if (state.game.activatedUnitId !== null && state.game.activatedUnitId !== unitId) return
       if (state.game.activatedUnitIds.includes(unitId)) return
       state.game.activatedUnitId = unitId
+      const fullPath = findPath(unit.position, rawTarget, solidTerrain(state.game), UNIT_RADIUS_IN)
+      const path = truncatePath(fullPath, unit.remainingMove)
       state.dragState = {
         unitId,
-        target: resolveTarget(unit.position, rawTarget, unit.remainingMove, solidTerrain(state.game), UNIT_RADIUS_IN),
+        target: path[path.length - 1]!,
+        path,
+        pathLength: pathLength(path),
       }
     })
   },
@@ -37,15 +42,19 @@ export const createUiSlice: StateCreator<GameStore, [['zustand/immer', never]], 
       if (state.dragState === null) return
       const unit = state.game.units[state.dragState.unitId]
       if (unit === undefined) return
-      state.dragState.target = resolveTarget(unit.position, rawTarget, unit.remainingMove, solidTerrain(state.game), UNIT_RADIUS_IN)
+      const fullPath = findPath(unit.position, rawTarget, solidTerrain(state.game), UNIT_RADIUS_IN)
+      const path = truncatePath(fullPath, unit.remainingMove)
+      state.dragState.target = path[path.length - 1]!
+      state.dragState.path = path
+      state.dragState.pathLength = pathLength(path)
     })
   },
 
   endDrag: () => {
     set((state) => {
       if (state.dragState === null) return
-      const { unitId, target } = state.dragState
-      const { state: game } = applyMove(state.game, unitId, target, UNIT_RADIUS_IN)
+      const { unitId, target, pathLength: pLen } = state.dragState
+      const { state: game } = applyMove(state.game, unitId, target, UNIT_RADIUS_IN, pLen)
       state.game = game
       state.dragState = null
     })
