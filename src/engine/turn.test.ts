@@ -28,6 +28,7 @@ const makeState = (overrides: Partial<GameState> = {}, units: Unit[] = []): Game
   phase: 1,
   activatedUnitIds: [],
   gameOver: false,
+  scores: { 1: 0, 2: 0 },
   ...overrides,
 })
 
@@ -224,5 +225,101 @@ describe('endActivation', () => {
     const result = endActivation(state)
 
     expect(result.phase).toBe(5)
+  })
+})
+
+describe('scores de zones de capture', () => {
+  it('attribue un point au joueur qui contrôle une zone en fin de phase', () => {
+    const units = [
+      makeUnit('p1-1', 1, { position: { x: 5.5, y: 5.5 } }),
+      makeUnit('p2-1', 2, { position: { x: 20, y: 20 } }),
+    ]
+    const state = makeState({
+      activePlayerId: 2,
+      activatedUnitId: 'p2-1',
+      activatedUnitIds: ['p1-1'],
+      captureZones: [{ tiles: [{ x: 5, y: 5 }] }],
+      phase: 1,
+    }, units)
+
+    const result = endActivation(state)
+
+    expect(result.scores[1]).toBe(1)
+    expect(result.scores[2]).toBe(0)
+  })
+
+  it('n\'attribue pas de point pour une zone contestée', () => {
+    const units = [
+      makeUnit('p1-1', 1, { position: { x: 5.5, y: 5.5 } }),
+      makeUnit('p2-1', 2, { position: { x: 5.2, y: 5.2 } }),
+    ]
+    const state = makeState({
+      activePlayerId: 2,
+      activatedUnitId: 'p2-1',
+      activatedUnitIds: ['p1-1'],
+      captureZones: [{ tiles: [{ x: 5, y: 5 }] }],
+      phase: 1,
+    }, units)
+
+    const result = endActivation(state)
+
+    expect(result.scores[1]).toBe(0)
+    expect(result.scores[2]).toBe(0)
+  })
+
+  it('attribue les points même à la dernière phase', () => {
+    const units = [
+      makeUnit('p1-1', 1, { position: { x: 5.5, y: 5.5 } }),
+      makeUnit('p2-1', 2, { position: { x: 20, y: 20 } }),
+    ]
+    const state = makeState({
+      activePlayerId: 2,
+      activatedUnitId: 'p2-1',
+      activatedUnitIds: ['p1-1'],
+      captureZones: [{ tiles: [{ x: 5, y: 5 }] }],
+      phase: 5,
+    }, units)
+
+    const result = endActivation(state)
+
+    expect(result.scores[1]).toBe(1)
+    expect(result.gameOver).toBe(true)
+  })
+
+  it('accumule les points sur les phases précédentes', () => {
+    const units = [
+      makeUnit('p1-1', 1, { position: { x: 5.5, y: 5.5 } }),
+      makeUnit('p2-1', 2, { position: { x: 20, y: 20 } }),
+    ]
+    const state = makeState({
+      activePlayerId: 2,
+      activatedUnitId: 'p2-1',
+      activatedUnitIds: ['p1-1'],
+      captureZones: [{ tiles: [{ x: 5, y: 5 }] }],
+      scores: { 1: 2, 2: 0 },
+      phase: 1,
+    }, units)
+
+    const result = endActivation(state)
+
+    expect(result.scores[1]).toBe(3)
+  })
+
+  it('ne marque pas de point en cours de phase', () => {
+    const units = [
+      makeUnit('p1-1', 1, { position: { x: 5.5, y: 5.5 } }),
+      makeUnit('p1-2', 1),
+      makeUnit('p2-1', 2, { position: { x: 20, y: 20 } }),
+    ]
+    const state = makeState({
+      activePlayerId: 1,
+      activatedUnitId: 'p1-1',
+      captureZones: [{ tiles: [{ x: 5, y: 5 }] }],
+      phase: 1,
+    }, units)
+
+    const result = endActivation(state)
+
+    expect(result.scores[1]).toBe(0)
   })
 })
