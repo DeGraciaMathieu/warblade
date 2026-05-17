@@ -14,6 +14,7 @@ export type GameState = {
   phase: number
   activatedUnitIds: UnitId[]
   gameOver: boolean
+  scores: Record<PlayerId, number>
 }
 
 /** Éléments qui bloquent la ligne de vue : walls uniquement. */
