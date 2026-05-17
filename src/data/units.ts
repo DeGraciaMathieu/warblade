@@ -12,6 +12,7 @@ export const SNIPER_SAVE = 4
 export const createInfantry = (id: string, playerId: PlayerId, x: number, y: number): Unit => ({
   id,
   name: 'Space Marine',
+  emoji: '⚔️',
   playerId,
   position: { x, y },
   move: INFANTRY_MOVE_IN,
@@ -26,6 +27,7 @@ export const createInfantry = (id: string, playerId: PlayerId, x: number, y: num
 export const createSniper = (id: string, playerId: PlayerId, x: number, y: number): Unit => ({
   id,
   name: 'Sniper',
+  emoji: '🎯',
   playerId,
   position: { x, y },
   move: SNIPER_MOVE_IN,

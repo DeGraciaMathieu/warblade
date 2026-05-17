@@ -14,6 +14,7 @@ export type PlayerId = 1 | 2
 export type Unit = {
   id: UnitId
   name: string
+  emoji: string
   playerId: PlayerId
   position: Position
   move: number
