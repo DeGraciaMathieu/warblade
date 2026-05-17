@@ -82,15 +82,14 @@ describe('pipeline mouvement + attaque dans la même phase', () => {
 })
 
 describe('attaque sur une unité à 0 blessures', () => {
-  it('une unité à 0 remainingWounds peut encore être ciblée — les blessures restent à 0', () => {
+  it('une unité tuée disparaît du state — attaquer un id inexistant ne produit aucun événement', () => {
     const alwaysHit = () => 0.99
     const p1 = makeUnit('p1', { playerId: 1, position: { x: 0, y: 0 } })
-    const deadP2 = makeUnit('p2', { playerId: 2, position: { x: 10, y: 0 }, remainingWounds: 0, save: 7 })
-    const state = makeState(p1, deadP2)
+    const state = makeState(p1) // p2 déjà absent (déjà mort)
 
     const { state: next, events } = resolveAttack(state, 'p1', 'p2', alwaysHit)
 
-    expect(events).toHaveLength(1)
-    expect(next.units['p2']?.remainingWounds).toBe(0)
+    expect(events).toHaveLength(0)
+    expect(next).toBe(state)
   })
 })

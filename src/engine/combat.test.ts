@@ -160,16 +160,22 @@ describe('résolution d\'une attaque', () => {
     expect(events[0]).toMatchObject({ type: 'attack-resolved', inCover: true })
   })
 
-  it('remainingWounds ne descend pas en dessous de 0', () => {
+  it('une unité qui tombe à 0 remainingWounds disparaît du plateau', () => {
     const alwaysHit: () => number = () => 0.99
-    const attacker = makeUnit('a', {
-      position: { x: 0, y: 0 },
-      weapon: { ...FUSIL, attacks: 10, damage: 3 },
-    })
-    const target = makeUnit('b', { position: { x: 10, y: 0 }, wounds: 5, remainingWounds: 2, save: 7 })
+    const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
+    const target = makeUnit('b', { position: { x: 10, y: 0 }, wounds: 5, remainingWounds: 1, save: 7 })
     const state = makeState(attacker, target)
     const { state: next } = resolveAttack(state, 'a', 'b', alwaysHit)
-    expect(next.units['b']?.remainingWounds).toBe(0)
+    expect(next.units['b']).toBeUndefined()
+  })
+
+  it('une unité avec des remainingWounds restants reste sur le plateau', () => {
+    const neverHit: () => number = () => 0.01
+    const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
+    const target = makeUnit('b', { position: { x: 10, y: 0 }, wounds: 5, remainingWounds: 5, save: 7 })
+    const state = makeState(attacker, target)
+    const { state: next } = resolveAttack(state, 'a', 'b', neverHit)
+    expect(next.units['b']).toBeDefined()
   })
 
   it('refuse l\'attaque si la partie est terminée', () => {

@@ -74,12 +74,14 @@ export const resolveAttack = (
     inCover,
   }
 
+  const newUnits =
+    newRemainingWounds === 0
+      ? Object.fromEntries(Object.entries(state.units).filter(([id]) => id !== targetId))
+      : { ...state.units, [targetId]: { ...target, remainingWounds: newRemainingWounds } }
+
   const newState: GameState = {
     ...state,
-    units: {
-      ...state.units,
-      [targetId]: { ...target, remainingWounds: newRemainingWounds },
-    },
+    units: newUnits,
   }
 
   return { state: newState, events: [event] }
