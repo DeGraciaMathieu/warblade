@@ -50,7 +50,7 @@ describe('décision de l\'IA', () => {
   })
 
   it('returns null when there are no living enemies', () => {
-    const state = makeState([makeUnit('p1', 1, 5, 0, { remainingWounds: 0 }), makeUnit('p2', 2, 0, 0)])
+    const state = makeState([makeUnit('p2', 2, 0, 0)]) // aucun ennemi (p1 déjà mort = absent du state)
     expect(decide(state)).toBeNull()
   })
 

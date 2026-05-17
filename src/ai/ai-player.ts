@@ -19,9 +19,7 @@ export function decide(state: GameState): AiDecision | null {
   const unit = getUnitToAct(state)
   if (unit === null) return null
 
-  const enemies = Object.values(state.units).filter(
-    (u) => u.playerId === 1 && u.remainingWounds > 0,
-  )
+  const enemies = Object.values(state.units).filter((u) => u.playerId === 1)
   if (enemies.length === 0) return null
 
   const attackTarget = findAttackTarget(unit, enemies, state)
