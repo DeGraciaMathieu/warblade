@@ -11,6 +11,7 @@ const makeState = (overrides: Partial<GameState> = {}): GameState => ({
   activatedUnitId: null,
   phase: 1,
   activatedUnitIds: [],
+  gameOver: false,
   ...overrides,
 })
 
