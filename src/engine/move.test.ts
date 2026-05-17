@@ -15,6 +15,7 @@ const BASE_STATE: GameState = {
   phase: 1,
   activatedUnitIds: [],
   gameOver: false,
+  scores: { 1: 0, 2: 0 },
 }
 
 describe('déplacement d\'une unité', () => {

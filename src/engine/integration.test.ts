@@ -31,6 +31,7 @@ const makeState = (...units: Unit[]): GameState => ({
   phase: 1,
   activatedUnitIds: [],
   gameOver: false,
+  scores: { 1: 0, 2: 0 },
 })
 
 describe('pipeline mouvement + attaque dans la même phase', () => {
