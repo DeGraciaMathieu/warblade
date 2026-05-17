@@ -13,9 +13,9 @@ const INITIAL_UNITS = [
   createInfantry('p1-5', 1, 2, 10),
   // Player 2
   createInfantry('p2-1', 2, 48, 29),
-  createInfantry('p2-2', 2, 48, 33),
+  createSniper('p2-2', 2, 48, 33),
   createInfantry('p2-3', 2, 40, 37),
-  createInfantry('p2-4', 2, 44, 37),
+  createSniper('p2-4', 2, 44, 37),
   createInfantry('p2-5', 2, 48, 37),
 ]
 
