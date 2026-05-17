@@ -1,12 +1,12 @@
 import type { StateCreator } from 'zustand'
 import type { GameState } from '../../domain/game-state'
 import type { GameSlice, GameStore } from './types'
-import { createInfantry, createSniper } from '../../data/units'
+import { createInfantry, createSniper, createSquadLeader } from '../../data/units'
 import { ARENA_MAP } from '../../data/maps'
 
 const INITIAL_UNITS = [
   // Player 1
-  createInfantry('p1-1', 1, 2, 2),
+  createSquadLeader('p1-leader', 1, 2, 2),
   createSniper('p1-2', 1, 6, 2),
   createInfantry('p1-3', 1, 10, 2),
   createSniper('p1-4', 1, 2, 6),
@@ -16,7 +16,7 @@ const INITIAL_UNITS = [
   createSniper('p2-2', 2, 48, 33),
   createInfantry('p2-3', 2, 40, 37),
   createSniper('p2-4', 2, 44, 37),
-  createInfantry('p2-5', 2, 48, 37),
+  createSquadLeader('p2-leader', 2, 48, 37),
 ]
 
 const initialGameState: GameState = {
