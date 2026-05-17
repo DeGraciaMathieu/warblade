@@ -54,7 +54,9 @@ export const createUiSlice: StateCreator<GameStore, [['zustand/immer', never]], 
     set((state) => {
       if (state.dragState === null) return
       const { unitId, target, pathLength: pLen } = state.dragState
-      const { state: game } = applyMove(state.game, unitId, target, UNIT_RADIUS_IN, pLen)
+      const unit = state.game.units[unitId]
+      if (unit === undefined) return
+      const { state: game } = applyMove(state.game, unitId, target, UNIT_RADIUS_IN, Math.min(pLen, unit.remainingMove))
       state.game = game
       state.dragState = null
     })
