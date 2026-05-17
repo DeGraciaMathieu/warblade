@@ -121,6 +121,10 @@ function drawUnits(
     }
     gfx.circle(0, 0, UNIT_RADIUS_PX).fill(unitColor)
 
+    const emojiText = new Text({ text: unit.emoji, style: { fontSize: UNIT_RADIUS_PX * 1.1 } })
+    emojiText.anchor.set(0.5, 0.5)
+    gfx.addChild(emojiText)
+
     const moveRatio = unit.move > 0 ? unit.remainingMove / unit.move : 0
     gfx
       .rect(-GAUGE_WIDTH_PX / 2, GAUGE_OFFSET_Y, GAUGE_WIDTH_PX, GAUGE_HEIGHT_PX)

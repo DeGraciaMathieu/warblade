@@ -13,7 +13,7 @@ export function UnitPanel() {
 
   return (
     <div style={styles.panel}>
-      <div style={styles.title}>{unit.name}</div>
+      <div style={styles.title}>{unit.emoji} {unit.name}</div>
       <div style={styles.section}>Statistiques</div>
       <div style={styles.statRow}>Mouvement : {Math.round(unit.remainingMove)}/{unit.move}</div>
       <div style={styles.statRow}>PV : {unit.remainingWounds}/{unit.wounds}</div>
