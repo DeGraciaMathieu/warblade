@@ -1,8 +1,10 @@
 import type { GameState } from '../domain/game-state'
+import { MAX_PHASES } from '../domain/game-state'
 import type { PlayerId } from '../domain/unit'
 
 export function endActivation(state: GameState): GameState {
   if (state.activatedUnitId === null) return state
+  if (state.gameOver) return state
 
   const newActivatedUnitIds = [...state.activatedUnitIds, state.activatedUnitId]
 
@@ -10,6 +12,10 @@ export function endActivation(state: GameState): GameState {
   const allActivated = allUnitIds.every((id) => newActivatedUnitIds.includes(id))
 
   if (allActivated) {
+    if (state.phase >= MAX_PHASES) {
+      return { ...state, activatedUnitId: null, gameOver: true }
+    }
+
     const units = Object.fromEntries(
       Object.entries(state.units).map(([id, unit]) => [
         id,

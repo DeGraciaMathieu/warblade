@@ -22,10 +22,12 @@ const makeState = (overrides: Partial<GameState> = {}, units: Unit[] = []): Game
   units: Object.fromEntries(units.map((u) => [u.id, u])),
   walls: [],
   obstacles: [],
+  captureZones: [],
   activePlayerId: 1,
   activatedUnitId: null,
   phase: 1,
   activatedUnitIds: [],
+  gameOver: false,
   ...overrides,
 })
 
@@ -185,5 +187,42 @@ describe('endActivation', () => {
     const result = endActivation(state)
 
     expect(result).toBe(state)
+  })
+
+  it('retourne le state inchangé si la partie est terminée', () => {
+    const units = [makeUnit('p1-1', 1), makeUnit('p2-1', 2)]
+    const state = makeState({ activatedUnitId: 'p1-1', gameOver: true }, units)
+
+    const result = endActivation(state)
+
+    expect(result).toBe(state)
+  })
+
+  it('passe gameOver à true quand la phase MAX_PHASES se termine', () => {
+    const units = [makeUnit('p1-1', 1), makeUnit('p2-1', 2)]
+    const state = makeState({
+      activePlayerId: 2,
+      activatedUnitId: 'p2-1',
+      activatedUnitIds: ['p1-1'],
+      phase: 5,
+    }, units)
+
+    const result = endActivation(state)
+
+    expect(result.gameOver).toBe(true)
+  })
+
+  it('ne démarre pas de nouvelle phase après MAX_PHASES', () => {
+    const units = [makeUnit('p1-1', 1), makeUnit('p2-1', 2)]
+    const state = makeState({
+      activePlayerId: 2,
+      activatedUnitId: 'p2-1',
+      activatedUnitIds: ['p1-1'],
+      phase: 5,
+    }, units)
+
+    const result = endActivation(state)
+
+    expect(result.phase).toBe(5)
   })
 })
