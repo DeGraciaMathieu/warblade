@@ -23,3 +23,11 @@ export const SNIPER: Weapon = {
   toHit: 2,
   damage: 3,
 }
+
+export const PISTOLET_BOLT: Weapon = {
+  name: 'Pistolet Bolt',
+  range: 8,
+  attacks: 5,
+  toHit: 2,
+  damage: 2,
+}

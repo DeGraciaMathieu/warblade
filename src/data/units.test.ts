@@ -2,12 +2,16 @@ import { describe, it, expect } from 'vitest'
 import {
   createInfantry,
   createSniper,
+  createSquadLeader,
   INFANTRY_MOVE_IN,
   INFANTRY_WOUNDS,
   INFANTRY_SAVE,
   SNIPER_MOVE_IN,
   SNIPER_WOUNDS,
   SNIPER_SAVE,
+  SQUAD_LEADER_MOVE_IN,
+  SQUAD_LEADER_WOUNDS,
+  SQUAD_LEADER_SAVE,
 } from './units'
 
 describe('création d\'une infanterie', () => {
@@ -93,6 +97,58 @@ describe('emoji de type d\'unité', () => {
     const infantry = createInfantry('i', 1, 0, 0)
     const sniper = createSniper('s', 1, 0, 0)
     expect(infantry.emoji).not.toBe(sniper.emoji)
+  })
+})
+
+describe('création d\'un chef d\'escouade', () => {
+  it('positionne l\'unité aux coordonnées demandées', () => {
+    const unit = createSquadLeader('c1', 1, 3, 7)
+    expect(unit.position).toEqual({ x: 3, y: 7 })
+  })
+
+  it('assigne le bon joueur', () => {
+    const unit = createSquadLeader('c1', 2, 0, 0)
+    expect(unit.playerId).toBe(2)
+  })
+
+  it('wounds et remainingWounds sont identiques à la création', () => {
+    const unit = createSquadLeader('c1', 1, 0, 0)
+    expect(unit.remainingWounds).toBe(unit.wounds)
+  })
+
+  it('move et remainingMove sont identiques à la création', () => {
+    const unit = createSquadLeader('c1', 1, 0, 0)
+    expect(unit.remainingMove).toBe(unit.move)
+  })
+
+  it('l\'arme active est disponible dans availableWeapons', () => {
+    const unit = createSquadLeader('c1', 1, 0, 0)
+    expect(unit.availableWeapons).toContain(unit.weapon)
+  })
+
+  it('expose les constantes de profil correctes', () => {
+    const unit = createSquadLeader('c1', 1, 0, 0)
+    expect(unit.move).toBe(SQUAD_LEADER_MOVE_IN)
+    expect(unit.wounds).toBe(SQUAD_LEADER_WOUNDS)
+    expect(unit.save).toBe(SQUAD_LEADER_SAVE)
+  })
+
+  it('est plus résistant qu\'un warrior', () => {
+    const leader = createSquadLeader('c1', 1, 0, 0)
+    const infantry = createInfantry('i1', 1, 0, 0)
+    expect(leader.wounds).toBeGreaterThan(infantry.wounds)
+  })
+
+  it('est plus lent qu\'un warrior', () => {
+    const leader = createSquadLeader('c1', 1, 0, 0)
+    const infantry = createInfantry('i1', 1, 0, 0)
+    expect(leader.move).toBeLessThan(infantry.move)
+  })
+
+  it('son arme principale a une portée plus courte que celle du warrior', () => {
+    const leader = createSquadLeader('c1', 1, 0, 0)
+    const infantry = createInfantry('i1', 1, 0, 0)
+    expect(leader.weapon.range).toBeLessThan(infantry.weapon.range)
   })
 })
 
