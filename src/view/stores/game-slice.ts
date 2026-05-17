@@ -23,6 +23,7 @@ const initialGameState: GameState = {
   phase: 1,
   activatedUnitIds: [],
   gameOver: false,
+  scores: { 1: 0, 2: 0 },
 }
 
 export const createGameSlice: StateCreator<GameStore, [['zustand/immer', never]], [], GameSlice> = (set) => ({
