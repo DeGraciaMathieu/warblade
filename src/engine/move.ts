@@ -36,6 +36,8 @@ const collidesWithOtherUnit = (target: Position, unitId: UnitId, units: Record<U
 
 // effectiveDistance : distance réelle parcourue le long du chemin, peut différer de la distance euclidienne si le chemin contourne des obstacles
 export const applyMove = (state: GameState, unitId: UnitId, target: Position, unitRadius: number, effectiveDistance?: number): Resolution => {
+  if (state.gameOver) return { state, events: [] }
+
   const unit = state.units[unitId]
 
   if (unit === undefined) return { state, events: [] }

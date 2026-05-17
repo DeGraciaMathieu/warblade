@@ -30,6 +30,7 @@ const makeState = (...units: Unit[]): GameState => ({
   activatedUnitId: null,
   phase: 1,
   activatedUnitIds: [],
+  gameOver: false,
 })
 
 describe('pipeline mouvement + attaque dans la même phase', () => {

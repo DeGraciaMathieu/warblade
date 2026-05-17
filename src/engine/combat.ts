@@ -20,6 +20,8 @@ export const resolveAttack = (
   targetId: UnitId,
   rng: Rng,
 ): Resolution => {
+  if (state.gameOver) return { state, events: [] }
+
   const attacker = state.units[attackerId]
   const target = state.units[targetId]
 

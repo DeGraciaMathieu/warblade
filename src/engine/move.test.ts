@@ -9,10 +9,12 @@ const BASE_STATE: GameState = {
   },
   walls: [],
   obstacles: [],
+  captureZones: [],
   activePlayerId: 1,
   activatedUnitId: null,
   phase: 1,
   activatedUnitIds: [],
+  gameOver: false,
 }
 
 describe('déplacement d\'une unité', () => {
@@ -63,12 +65,10 @@ describe('déplacement d\'une unité', () => {
 
   it("bloque si remainingMove est épuisé", () => {
     const exhausted: GameState = {
+      ...BASE_STATE,
       units: {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 0 },
       },
-      walls: [],
-      obstacles: [],
-      activePlayerId: 1,
     }
 
     const { state, events } = applyMove(exhausted, 'unit-1', { x: 11, y: 10 }, UNIT_RADIUS_IN)
@@ -79,12 +79,10 @@ describe('déplacement d\'une unité', () => {
 
   it("bloque si la distance dépasse remainingMove même si elle est dans move", () => {
     const partial: GameState = {
+      ...BASE_STATE,
       units: {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 6, remainingMove: 2 },
       },
-      walls: [],
-      obstacles: [],
-      activePlayerId: 1,
     }
 
     const { state, events } = applyMove(partial, 'unit-1', { x: 14, y: 10 }, UNIT_RADIUS_IN)
@@ -103,16 +101,11 @@ describe('déplacement d\'une unité', () => {
 
   it("refuse un déplacement si la cible chevauche une autre unité", () => {
     const state: GameState = {
+      ...BASE_STATE,
       units: {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 10, remainingMove: 10 },
         'unit-2': { id: 'unit-2', position: { x: 14, y: 10 }, move: 6, remainingMove: 6 },
       },
-      walls: [],
-      obstacles: [],
-      activePlayerId: 1,
-      activatedUnitId: null,
-      phase: 1,
-      activatedUnitIds: [],
     }
 
     const { state: result, events } = applyMove(state, 'unit-1', { x: 14, y: 10 }, UNIT_RADIUS_IN)
@@ -123,16 +116,11 @@ describe('déplacement d\'une unité', () => {
 
   it("accepte un déplacement si la cible est suffisamment loin d une autre unité", () => {
     const state: GameState = {
+      ...BASE_STATE,
       units: {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 10, remainingMove: 10 },
         'unit-2': { id: 'unit-2', position: { x: 17, y: 10 }, move: 6, remainingMove: 6 },
       },
-      walls: [],
-      obstacles: [],
-      activePlayerId: 1,
-      activatedUnitId: null,
-      phase: 1,
-      activatedUnitIds: [],
     }
 
     const { state: result } = applyMove(state, 'unit-1', { x: 14, y: 10 }, UNIT_RADIUS_IN)
@@ -166,19 +154,23 @@ describe('déplacement d\'une unité', () => {
 
   it("refuse un déplacement si les cercles des deux unités se chevauchent", () => {
     const state: GameState = {
+      ...BASE_STATE,
       units: {
         'unit-1': { id: 'unit-1', position: { x: 10, y: 10 }, move: 10, remainingMove: 10 },
         'unit-2': { id: 'unit-2', position: { x: 14, y: 10 }, move: 6, remainingMove: 6 },
       },
-      walls: [],
-      obstacles: [],
-      activePlayerId: 1,
-      activatedUnitId: null,
-      phase: 1,
-      activatedUnitIds: [],
     }
 
     const { state: result, events } = applyMove(state, 'unit-1', { x: 12.5, y: 10 }, UNIT_RADIUS_IN)
+
+    expect(result).toBe(state)
+    expect(events).toHaveLength(0)
+  })
+
+  it("refuse le déplacement si la partie est terminée", () => {
+    const state: GameState = { ...BASE_STATE, gameOver: true }
+
+    const { state: result, events } = applyMove(state, 'unit-1', { x: 14, y: 10 }, UNIT_RADIUS_IN)
 
     expect(result).toBe(state)
     expect(events).toHaveLength(0)

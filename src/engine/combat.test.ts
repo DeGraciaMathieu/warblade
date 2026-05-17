@@ -24,10 +24,12 @@ const makeState = (...units: Unit[]): GameState => ({
   units: Object.fromEntries(units.map((u) => [u.id, u])),
   walls: [],
   obstacles: [],
+  captureZones: [],
   activePlayerId: 1,
   activatedUnitId: null,
   phase: 1,
   activatedUnitIds: [],
+  gameOver: false,
 })
 
 describe('résolution d\'une attaque', () => {
@@ -166,5 +168,16 @@ describe('résolution d\'une attaque', () => {
     const state = makeState(attacker, target)
     const { state: next } = resolveAttack(state, 'a', 'b', alwaysHit)
     expect(next.units['b']?.remainingWounds).toBe(0)
+  })
+
+  it('refuse l\'attaque si la partie est terminée', () => {
+    const attacker = makeUnit('a', { position: { x: 0, y: 0 } })
+    const target = makeUnit('b', { position: { x: 10, y: 0 } })
+    const state: GameState = { ...makeState(attacker, target), gameOver: true }
+
+    const { state: next, events } = resolveAttack(state, 'a', 'b', seededRng(1))
+
+    expect(next).toBe(state)
+    expect(events).toHaveLength(0)
   })
 })
