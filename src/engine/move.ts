@@ -34,12 +34,13 @@ const collidesWithOtherUnit = (target: Position, unitId: UnitId, units: Record<U
   return false
 }
 
-export const applyMove = (state: GameState, unitId: UnitId, target: Position, unitRadius: number): Resolution => {
+// effectiveDistance : distance réelle parcourue le long du chemin, peut différer de la distance euclidienne si le chemin contourne des obstacles
+export const applyMove = (state: GameState, unitId: UnitId, target: Position, unitRadius: number, effectiveDistance?: number): Resolution => {
   const unit = state.units[unitId]
 
   if (unit === undefined) return { state, events: [] }
   if (!isInsideBoard(target)) return { state, events: [] }
-  const moved = distance(unit.position, target)
+  const moved = effectiveDistance ?? distance(unit.position, target)
   if (moved > unit.remainingMove) return { state, events: [] }
   if (unitRadius > 0 && collidesWithOtherUnit(target, unitId, state.units, unitRadius)) return { state, events: [] }
   if (unitRadius > 0 && collidesWithTerrain(target, unitRadius, solidTerrain(state))) return { state, events: [] }
